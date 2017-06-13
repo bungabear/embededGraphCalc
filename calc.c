@@ -169,7 +169,7 @@ void printStr(const char *str, int x, int y, unsigned short color, unsigned shor
 void printChar(char charNum, int x, int y, unsigned short color, unsigned short bgcolor);
 struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(const char *buttonStr);
-void drawGraph(char *str, int xStart, int yStart);
+void drawGraph(char *str);
 
 unsigned short *pfbdata;
 struct fb_var_screeninfo fbvar;
@@ -177,13 +177,15 @@ int buttonsYPos;
 int pressedFlag = 0;
 int graphWidth;
 int graphHeight;
-int xScale = 10;
-int yScale = 10;
+int graphXstart;
+int graphYstart;
+int xScale = 20;
+int yScale = 20;
 char equation[100] = {0,};
 
-void drawGraph(char *str, int xStart, int yStart)
+void drawGraph(char *str)
 {
-	int xPadding = 0, offset, x, y;
+	int xPadding = 0, offset, x, y, z;
 	if(graphWidth < fbvar.xres)
 	{
 		xPadding = fbvar.xres - graphWidth;
@@ -198,6 +200,38 @@ void drawGraph(char *str, int xStart, int yStart)
 		}
 	}
 
+	//xStart is pixels. 
+	for(y = fontSize; y < graphHeight; y++)
+	{
+		for(x = xPadding; x < graphWidth; x++)
+		{
+			//draw Y Line
+			if(graphXstart + x == 0)
+			{
+				*(pfbdata + x + fbvar.xres*y) = 0x0;	
+				if((graphYstart + y)%yScale == 0)
+				{
+					for(z = -4; z <= 4; z++)
+					{
+						*(pfbdata + x+z + fbvar.xres*y) = 0x0;	
+					}
+				}
+			}
+			//draw X Line
+			else if(graphYstart + y == 0)
+			{
+				*(pfbdata + x + fbvar.xres*y) = 0x0;	
+				if((graphXstart + x)%xScale == 0)
+				{
+					for(z = -4; z <= 4; z++)
+					{
+						*(pfbdata + x + fbvar.xres*(z+y)) = 0x0;	
+					}
+				}
+			}
+		}
+	}
+	/*
 	for(x = xPadding; x < graphWidth; x++)
 	{
 		*(pfbdata + x + fbvar.xres*(graphHeight/2 + fontSize)) = 0x0;	
@@ -206,6 +240,7 @@ void drawGraph(char *str, int xStart, int yStart)
 	{
 		*(pfbdata + xPadding + graphWidth/2 + fbvar.xres*y) = 0x0;	
 	}
+	*/
 	//str is NULL, Draw only graph's back 
 	if(str != NULL)
 	{
@@ -318,7 +353,7 @@ void buttonTouch(const char *buttonStr)
 	// Del
 	else if(strncmp(buttonStr, buttonChar[5],5) == 0)
 	{
-		//del in queue
+		// dequeue
 	}
 	int i,j,k = 0;
 	int len = strlen(equation);
@@ -416,7 +451,9 @@ void initScreen()
 			//8col each width is 40
 		}
 	}
-	drawGraph(NULL, 0,0);
+	graphXstart = (-graphWidth/2);
+	graphYstart = (-graphHeight/2);
+	drawGraph(NULL);
 }
 void printStr(const char *str, int x, int y, unsigned short color, unsigned short bgcolor)
 {
