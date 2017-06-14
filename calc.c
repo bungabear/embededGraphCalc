@@ -8,6 +8,7 @@
 #include<sys/types.h>
 #include<linux/input.h>
 #include<sys/time.h>
+#include"queue.h"
 
 #define FBDEVFILE "/dev/fb2"
 // ascii + pi,root font
