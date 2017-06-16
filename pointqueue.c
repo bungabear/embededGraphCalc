@@ -20,11 +20,9 @@ void Print_PointNode(PointQueue *queue) {
 		node = node->right;
 	}
 }
-
-int Empty_PointQueue(PointQueue *queue) {
-    if (queue->size > 0) {
+void Clear_PointQueue(PointQueue *queue) {
     PointNode *old, *tmp = queue->head;
-    while(tmp->right != NULL) {
+    while(tmp != NULL) {
         old = tmp;
         free(old);
         tmp = tmp->right;
@@ -32,9 +30,12 @@ int Empty_PointQueue(PointQueue *queue) {
     queue->head = NULL;
     queue->tail = NULL;
     queue->size = 0;
-    return 0;
+}
+int Is_Empty_PointQueue(PointQueue *queue) {
+    if (queue->size > 0) {
+        return 0;
     }
-    else    return -1;
+    else return -1;
 }
 
 PointNode *Create_PointNode(int x, int y) {
@@ -43,7 +44,7 @@ PointNode *Create_PointNode(int x, int y) {
 	if (node == NULL)
 		return node;
 
-    node->x - x;
+    node->x = x;
     node->y = y;
 
 	node->left = NULL;
@@ -72,13 +73,13 @@ int Enqueue_PointQueue(PointQueue *queue, int x, int y) {
 	}
 	queue->size++;
 	//printf("head : %x, tail : %x\n", queue->head, queue->tail);
-	printf("Enqueue x = %d, y = %d\n", x, y);
+    //printf("Enqueue x = %d, y = %d\n", x, y);
 	return 0;
 }
 
 int Dequeue_PointQueue(PointQueue *queue, int *x, int *y) {
 
-	if (!Empty_Queue(queue)) {
+	if (!Is_Empty_Queue(queue)) {
 		PointNode *tmp;
 		PointNode *first = queue->head;
 		queue->head = first->right;
@@ -93,6 +94,11 @@ int Dequeue_PointQueue(PointQueue *queue, int *x, int *y) {
 		//printf("head : %x, tail : %x\n", queue->head, queue->tail);
 		//printf("Dequeue %s\n", str);
 		queue->size--;
+        if(queue->size == 0)
+        {
+            queue->head = NULL;
+            queue->tail = NULL;
+        }
 
 		return 0;
 	}
@@ -104,7 +110,7 @@ int Dequeue_PointQueue(PointQueue *queue, int *x, int *y) {
 
 int Pop_PointQueue(PointQueue *queue, int *x, int *y) {
 
-	if (!Empty_Queue(queue)) {
+	if (!Is_Empty_Queue(queue)) {
 		PointNode *tmp;
 		PointNode *end = queue->tail;
 		queue->tail = end->left;
@@ -119,6 +125,11 @@ int Pop_PointQueue(PointQueue *queue, int *x, int *y) {
 		//printf("head : %x, tail : %x\n", queue->head, queue->tail);
 		//printf("Pop %s\n", str);
 		queue->size--;
+        if(queue->size == 0)
+        {
+            queue->head = NULL;
+            queue->tail = NULL;
+        }
 
 		return 0;
 	}

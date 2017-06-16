@@ -3,7 +3,6 @@
 
 #include "queue.h"
 
-
 int Confirm_Word(char *str);
 String_Queue *Adjust_Parentheses(String_Queue *eqution);
 String_Queue *Reguler_equation(String_Queue *equation);

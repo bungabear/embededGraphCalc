@@ -22,10 +22,9 @@ void Print_Node(Queue *queue) {
 	}
 }
 
-int Empty_Queue(Queue *queue) {
-	if (queue->size > 0) {
+void Clear_Queue(Queue *queue) {
     Node *old, *tmp = queue->head;
-    while(tmp->right != NULL) {
+    while(tmp!= NULL) {
         old = tmp;
         free(old->context);
         free(old);
@@ -34,6 +33,10 @@ int Empty_Queue(Queue *queue) {
     queue->head = NULL;
     queue->tail = NULL;
     queue->size = 0; 
+}
+
+int Is_Empty_Queue(Queue *queue) {
+	if (queue->size > 0) {
     return 0;
     }
 	else	return -1;
@@ -84,7 +87,7 @@ char *Dequeue(Queue *queue) {
 	char *str = NULL;
 	int len;
 
-	if (!Empty_Queue(queue)) {
+	if (!Is_Empty_Queue(queue)) {
 		Node *tmp;
 		Node *first = queue->head;
 		queue->head = first->right;
@@ -100,6 +103,11 @@ char *Dequeue(Queue *queue) {
 		//printf("head : %x, tail : %x\n", queue->head, queue->tail);
 		//printf("Dequeue %s\n", str);
 		queue->size--;
+        if(queue->size == 0)
+        {
+            queue->head = NULL;
+            queue->tail = NULL;
+        }
 
 		return str;
 	}
@@ -113,7 +121,7 @@ char *Pop(Queue *queue) {
 	char *str = NULL;
 	int len;
 
-	if (!Empty_Queue(queue)) {
+	if (!Is_Empty_Queue(queue)) {
 		Node *tmp;
 		Node *end = queue->tail;
 		queue->tail = end->left;
@@ -129,6 +137,11 @@ char *Pop(Queue *queue) {
 		//printf("head : %x, tail : %x\n", queue->head, queue->tail);
 		//printf("Pop %s\n", str);
 		queue->size--;
+        if(queue->size == 0)
+        {
+            queue->head = NULL;
+            queue->tail = NULL;
+        }
 
 		return str;
 	}

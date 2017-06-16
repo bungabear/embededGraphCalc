@@ -67,7 +67,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			if (cur_state == OPERATION || cur_state == DOT || cur_state == CLOSE) {
 				printf("irreguler equation\n");
 				return 0;
-			} else if (cur_state == FUNTION || cur_state == UNKNOWN || cur_state == OPEN || cur_state == CONSTANT){
+			} else if (cur_state == FUNCTION || cur_state == UNKNOWN || cur_state == OPEN || cur_state == CONSTANT){
 				res = Enqueue(infix, str);
 				if (res < 0) return 0;
 			} else if (cur_state == NUMBER)		last_str = str;
@@ -76,16 +76,16 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 				printf("irreguler equation\n");
 				return 0;
 			}
-			else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == OPEN || cur_state == CONSTANT) {
+			else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == OPEN || cur_state == CONSTANT) {
 				res = Enqueue(infix, str);
 				if (res < 0) return 0;
 			}
 			else if (cur_state == NUMBER)		last_str = str;
-		} else if(last_state == FUNTION){
+		} else if(last_state == FUNCTION){
 			if (cur_state == OPERATION || cur_state == DOT || cur_state == CLOSE) {
 				printf("irreguler equation\n");
 				return 0;
-			} else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == OPEN || cur_state == CONSTANT) {
+			} else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == OPEN || cur_state == CONSTANT) {
 				res = Enqueue(infix, str);
 				if (res < 0) return 0;
 			} else if (cur_state == NUMBER)		last_str = str;
@@ -93,7 +93,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			if (cur_state == DOT) {
 				printf("irreguler equation\n");
 				return 0;
-			} else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == OPEN || cur_state == CONSTANT ) {
+			} else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == OPEN || cur_state == CONSTANT ) {
 				res = Enqueue(infix, "*");
 				if (res < 0) return 0;
 				res = Enqueue(infix, str);
@@ -110,7 +110,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			if (cur_state == DOT) {
 				printf("irreguler equation\n");
 				return 0;
-			} else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == OPEN || cur_state == CONSTANT ) {
+			} else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == OPEN || cur_state == CONSTANT ) {
 				res = Enqueue(infix, "*");
 				if (res < 0) return 0;
 				res = Enqueue(infix, str);
@@ -127,7 +127,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			if (cur_state == DOT || cur_state == OPERATION) {
 				printf("irreguler equation\n");
 				return 0;
-			} else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == CONSTANT || cur_state == OPEN || cur_state == CLOSE) {
+			} else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == CONSTANT || cur_state == OPEN || cur_state == CLOSE) {
 				res = Enqueue(infix, str);
 				if (res < 0) return 0;
 			} else if (cur_state == NUMBER) {
@@ -137,7 +137,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			if (cur_state == DOT) {
 				printf("irreguler equation\n");
 				return 0;
-			} else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == CONSTANT || cur_state == OPEN) {
+			} else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == CONSTANT || cur_state == OPEN) {
 				res = Enqueue(infix, "*");
 				if (res < 0) return 0;
 				res = Enqueue(infix, str);
@@ -163,7 +163,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			if (cur_state == NUMBER || cur_state == DOT) {
 				last_str = (char *)realloc(last_str, strlen(last_str) + strlen(str) + 1);
 				strncat(last_str, str, strlen(str));
-			} else if (cur_state == UNKNOWN || cur_state == FUNTION || cur_state == CONSTANT || cur_state == OPEN) {
+			} else if (cur_state == UNKNOWN || cur_state == FUNCTION || cur_state == CONSTANT || cur_state == OPEN) {
 				res = Enqueue(infix, last_str);
 				if (res < 0) return 0;
 				res = Enqueue(infix, "*");

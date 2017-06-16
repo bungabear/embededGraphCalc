@@ -13,7 +13,8 @@ typedef struct {
 Node *Create_Node(char *str);
 void Print_Node(Queue *queue);
 void Init_Queue(Queue *queue);
-int Empty_Queue(Queue *queue);
+void Clear_Queue(Queue *queue);
+int Is_Empty_Queue(Queue *queue);
 int Enqueue(Queue *queue, char *str);
 char *Dequeue(Queue *queue);
 char *Pop(Queue *queue);

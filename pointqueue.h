@@ -14,7 +14,8 @@ typedef struct {
 PointNode *Create_PointNode(int x, int y);
 void Init_PointQueue(PointQueue *queue);
 void Print_PointNode(PointQueue *queue);
-int Empty_PointQueue(PointQueue *queue);
+void Clear_PointQueue(PointQueue *queue);
+int Is_Empty_PointQueue(PointQueue *queue);
 int Enqueue_PointQueue(PointQueue *queue, int x, int y);
 int Dequeue_PointQueue(PointQueue *queue, int *x, int *y);
 int Pop_PointQueue(PointQueue *queue, int *x, int *y);

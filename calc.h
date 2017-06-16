@@ -1,11 +1,13 @@
 #ifndef CALC_H
 #define CALC_H
 
+#include "queue.h"
+
 #define FBDEVFILE "/dev/fb2"
 
 #define OPEN		0
 #define CLOSE		1
-#define FUNTION		2
+#define FUNCTION		2
 #define OPERATION	3
 #define UNKNOWN		4
 #define CONSTANT	5
@@ -25,10 +27,10 @@ const char buttonChar[32][5] = {
 };
 
 const int state[32] = {
-	-1, UNKNOWN, CONSTANT, OPEN, CLOSE, -1, OPERATION, FUNTION,
-	FUNTION, FUNTION, CONSTANT, NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
-	FUNTION, FUNTION, OPERATION, NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
-	FUNTION, FUNTION, DOT, NUMBER, NUMBER, NUMBER, NUMBER, -1
+	-1, UNKNOWN, CONSTANT, OPEN, CLOSE, -1, OPERATION, FUNCTION,
+	FUNCTION, FUNCTION, CONSTANT, NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
+	FUNCTION, FUNCTION, OPERATION, NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
+	FUNCTION, FUNCTION, DOT, NUMBER, NUMBER, NUMBER, NUMBER, -1
 };
 
 
@@ -183,6 +185,6 @@ void printStr(const char *str, int x, int y, unsigned short color, unsigned shor
 void printChar(char charNum, int x, int y, unsigned short color, unsigned short bgcolor);
 struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(int buttonNum);
-void drawGraph(char *str);
+void drawGraph(Queue *postfix);
 
 #endif

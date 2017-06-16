@@ -8,6 +8,7 @@
 #include<sys/ioctl.h>
 #include<sys/types.h>
 #include<linux/input.h>
+#include<math.h>
 #include<sys/time.h>
 #include"calc.h"
 #include"queue.h"
@@ -19,14 +20,17 @@ int buttonsYPos;
 int pressedFlag = 0;
 int graphWidth;
 int graphHeight;
+
+// x, y's start value in virtual pixel value. ex) x = -160(-16)
 int graphXstart;
 int graphYstart;
+// 10pixel per inteager x, y
 int xScale = 20;
 int yScale = 20;
 Queue *equationQueue;
 PointQueue *pointQueue;
 
-void drawGraph(char *str)
+void drawGraph(Queue *postfix)
 {
     int xPadding = 0, offset, x, y, z;
     if(graphWidth < fbvar.xres)
@@ -34,6 +38,7 @@ void drawGraph(char *str)
         xPadding = fbvar.xres - graphWidth;
         xPadding = xPadding >> 2;
     }
+    // paint background to white
     for(y = fontSize; y < graphHeight; y++)
     {
         for(x = xPadding; x < graphWidth - xPadding; x++)
@@ -48,25 +53,27 @@ void drawGraph(char *str)
     {
         for(x = xPadding; x < graphWidth; x++)
         {
-            //draw Y Line
+            // draw Y Line
             if(graphXstart + x == 0)
             {
                 *(pfbdata + x + fbvar.xres*y) = 0x0;	
+                // draw scale
                 if((graphYstart + y)%yScale == 0)
                 {
-                    for(z = -4; z <= 4; z++)
+                    for(z = -2; z <= 2; z++)
                     {
                         *(pfbdata + x+z + fbvar.xres*y) = 0x0;	
                     }
                 }
             }
-            //draw X Line
+            // draw X Line
             else if(graphYstart + y == 0)
             {
                 *(pfbdata + x + fbvar.xres*y) = 0x0;	
+                // draw scale
                 if((graphXstart + x)%xScale == 0)
                 {
-                    for(z = -4; z <= 4; z++)
+                    for(z = -2; z <= 2; z++)
                     {
                         *(pfbdata + x + fbvar.xres*(z+y)) = 0x0;	
                     }
@@ -74,30 +81,40 @@ void drawGraph(char *str)
             }
         }
     }
-    /*
-       for(x = xPadding; x < graphWidth; x++)
-       {
-     *(pfbdata + x + fbvar.xres*(graphHeight/2 + fontSize)) = 0x0;	
-     }
-     for(y = fontSize; y < graphHeight; y++)
-     {
-     *(pfbdata + xPadding + graphWidth/2 + fbvar.xres*y) = 0x0;	
-     }
-     */
-    //str is NULL, Draw only graph's back 
-    if(str != NULL)
+    // test Graph
+    double i,j;
+    for(x = graphXstart; x < graphWidth+graphXstart; x++)
     {
-        //apply equation
+        // TODO calculate equation and draw line with in points 
+	i = x/(double)xScale;
+        j = i*i*i;
+	j *= yScale;
+        Enqueue_PointQueue(pointQueue, x, (int)j);
     }
+    // draw Line
+    // if Queue is empty, Dequeue return -1
+    while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
+    {
+        printf("point x : %d, y : %d,\t", x, y);
+	x = x - graphXstart;
+        y = graphHeight - (y - graphYstart);
+        printf("set  x : %d, y : %d\n", x, y);
+        if(y < fontSize || y > graphHeight)
+	{
+            continue;
+	}
+        offset = x + fbvar.xres*y;
+        *(pfbdata+offset) = 0x00ff;
+    }   
 }
 int main()
 {
     int fd;
-    initScreen();	
     equationQueue = malloc(sizeof(Queue));
-    pointQueue = malloc(sizeof(pointQueue));
+    pointQueue = malloc(sizeof(PointQueue));
     Init_Queue(equationQueue);
     Init_PointQueue(pointQueue);
+    initScreen();	
     fd = open("/dev/input/event4", O_RDWR);
     if(fd<0) return -1;
     int x = -1,y = -1, offset, touchButton;
@@ -190,9 +207,9 @@ void buttonTouch(int buttonNum)
     // "Draw" button
     if(buttonNum == 31)
     {
-        // TODO Draw graph
         // clear equation and empty queue
-        Empty_Queue(equationQueue);
+        drawGraph(NULL);
+        Clear_Queue(equationQueue);
         memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
         
         return;
@@ -202,7 +219,6 @@ void buttonTouch(int buttonNum)
     {
         // Pop For delete one
         Pop(equationQueue);
-        
     }
     else
     {
@@ -214,7 +230,7 @@ void buttonTouch(int buttonNum)
             return;
         // else buttons
         Enqueue(equationQueue, buttonChar[buttonNum]);
-        if(state[buttonNum] == FUNTION)
+        if(state[buttonNum] == FUNCTION)
         {
             // add ( for Function
             Enqueue(equationQueue, "(");
