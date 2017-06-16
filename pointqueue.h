@@ -1,7 +1,7 @@
-typedef struct _node {
+typedef struct _PointNode {
     int x;
     int y;
-	struct _node *left, *right;
+	struct _PointNode *left, *right;
 }PointNode;
 
 typedef struct {
@@ -14,6 +14,6 @@ void Init_PointQueue(PointQueue *queue);
 void Print_PointNode(PointQueue *queue);
 int Empty_PointQueue(PointQueue *queue);
 int Enqueue_PointQueue(PointQueue *queue, int x, int y);
-int *Dequeue_PointQueue(PointQueue *queue, int *x, int *y);
-int *Pop_PointQueue(PointQueue *queue, int *x int *y);
+int Dequeue_PointQueue(PointQueue *queue, int *x, int *y);
+int Pop_PointQueue(PointQueue *queue, int *x, int *y);
 int Push_PointQueue(PointQueue *queue, int x, int y);

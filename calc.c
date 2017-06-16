@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
+#include<string.h>
 #include<fcntl.h>
 #include<linux/fb.h>
 #include<sys/mman.h>
@@ -10,7 +11,7 @@
 #include<sys/time.h>
 #include"calc.h"
 #include"queue.h"
-#include"pointQueue.h"
+#include"pointqueue.h"
 
 unsigned short *pfbdata;
 struct fb_var_screeninfo fbvar;
@@ -22,7 +23,8 @@ int graphXstart;
 int graphYstart;
 int xScale = 20;
 int yScale = 20;
-pointQueue pointQue;
+Queue *equationQueue;
+PointQueue *pointQueue;
 
 void drawGraph(char *str)
 {
@@ -189,34 +191,39 @@ void buttonTouch(const char *buttonStr)
 	if(strncmp(buttonStr, buttonChar[31],5) == 0)
 	{
 		// Draw Graph
-		memset(equation, '\0', 100);
+            Empty_Queue(equationQueue);
 	}
 	// Del
 	else if(strncmp(buttonStr, buttonChar[5],5) == 0)
 	{
 		// dequeue
+            Dequeue(equationQueue);
 	}
-	int i,j,k = 0;
-	int len = strlen(equation);
+	int i,j;
+    char *str;
+    Node *tmp = equationQueue->head;
+    for(i = 0, j = 0 ; i < equationQueue->size; i++)
+    {
+            j += sizeof(tmp->context);
+            tmp = tmp->left;
+    }
+    tmp = equationQueue->head;
+    str = malloc(j+1);
+    memset(str, '\0', j+1);
+    for(i = 0, j = 0 ; i < equationQueue->size; i++)
+    {
+            strcpy(&str[j], tmp->context);
+            j += sizeof(tmp->context);
+            tmp = tmp->left;
+    }
 
-	for(i = len, j = 0 ; i < 99 ; i++)
-	{
-		if(buttonStr[j] != 0)
-		{
-			equation[i] = buttonStr[j++];
-		}
-		else
-		{
-			break;
-		}
-	}
-	if(i>40)
-	{
-		k = i-40;
-	}
-	printStr(&equation[k], 0, 0, 0xffff, 0x0000);
-	printf("%s\n", equation);
+    if(j > 40)
+            j -= 40;
+
+	printStr(&str[j], 0, 0, 0xffff, 0x0000);
+	printf("%s\n", str);
 	fflush(stdout);
+    free(str);
 
 }
 struct timeval elapsedTime(struct timeval prev)

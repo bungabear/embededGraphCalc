@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
-#include "PointQueue.h"
+#include "pointqueue.h"
 
 void Init_PointQueue(PointQueue *queue) {
 	queue->head = NULL;
@@ -16,7 +16,7 @@ void Print_PointNode(PointQueue *queue) {
 	if (queue->size == 0)	return;
 
 	for (i = 0; i < queue->size; i++) {
-		printf("context : x = %d, y = %d\n", node->x, node->y, node->context);
+		printf("context : x = %d, y = %d\n", node->x, node->y);
 		node = node->right;
 	}
 }
@@ -27,7 +27,7 @@ int Empty_PointQueue(PointQueue *queue) {
 	else	return -1;
 }
 
-pointNode *Create_PointNode(int x, int y) {
+PointNode *Create_PointNode(int x, int y) {
 	PointNode *node = (PointNode *)malloc(sizeof(PointNode));
 
 	if (node == NULL)
@@ -66,7 +66,7 @@ int Enqueue_PointQueue(PointQueue *queue, int x, int y) {
 	return 0;
 }
 
-int *Dequeue_PointQueue(PointQueue *queue, int *x, int *y) {
+int Dequeue_PointQueue(PointQueue *queue, int *x, int *y) {
 
 	if (!Empty_Queue(queue)) {
 		PointNode *tmp;
@@ -92,7 +92,7 @@ int *Dequeue_PointQueue(PointQueue *queue, int *x, int *y) {
 	}
 }
 
-int *Pop_PointQueue(PointQueue *queue, int *x, int *y) {
+int Pop_PointQueue(PointQueue *queue, int *x, int *y) {
 
 	if (!Empty_Queue(queue)) {
 		PointNode *tmp;
@@ -118,6 +118,6 @@ int *Pop_PointQueue(PointQueue *queue, int *x, int *y) {
 	}
 }
 int Push_PointQueue(PointQueue *queue, int x, int y) {
-	return Enqueue_PointQueue(queue, int x, int y);
+	return Enqueue_PointQueue(queue, x, y);
 }
 
