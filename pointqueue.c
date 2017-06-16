@@ -22,9 +22,19 @@ void Print_PointNode(PointQueue *queue) {
 }
 
 int Empty_PointQueue(PointQueue *queue) {
-	if (queue->size > 0)
-		return 0;
-	else	return -1;
+    if (queue->size > 0) {
+    PointNode *old, *tmp = queue->head;
+    while(tmp->right != NULL) {
+        old = tmp;
+        free(old);
+        tmp = tmp->right;
+    }
+    queue->head = NULL;
+    queue->tail = NULL;
+    queue->size = 0;
+    return 0;
+    }
+    else    return -1;
 }
 
 PointNode *Create_PointNode(int x, int y) {

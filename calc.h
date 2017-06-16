@@ -14,10 +14,14 @@
 
 // Buttons of screen. P is Pi, R is Root.
 const char buttonChar[32][5] = {
-	"y=", "x", "P", "(", ")", "Del", "^", "R",
-	"sin", "abs", "e", "7", "8", "9", "/", "-",
-	"cos", "ln", "%", "4", "5", "6", "*", "+",
-	"tan", "log", ".", "1", "2", "3", "0", "Draw"
+    //0     1       2       3       4       5       6       7
+	"y=",   "x",    "P",    "(",    ")",    "Del",  "^",    "R",
+    //8     9       10      11      12      13      14      15
+	"sin",  "abs",  "e",    "7",    "8",    "9",    "/",    "-",
+    //16    17      18      19      20      21      22      23
+	"cos",  "ln",   "%",    "4",    "5",    "6",    "*",    "+",
+    //24    25      26      27      28      29      30      31
+	"tan",  "log",  ".",    "1",    "2",    "3",    "0",    "Draw"
 };
 
 const int state[32] = {
@@ -178,7 +182,7 @@ void initScreen();
 void printStr(const char *str, int x, int y, unsigned short color, unsigned short bgcolor);
 void printChar(char charNum, int x, int y, unsigned short color, unsigned short bgcolor);
 struct timeval elapsedTime(struct timeval prev);
-void buttonTouch(const char *buttonStr);
+void buttonTouch(int buttonNum);
 void drawGraph(char *str);
 
 #endif

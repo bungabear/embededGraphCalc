@@ -17,14 +17,25 @@ void Print_Node(Queue *queue) {
 	if (queue->size == 0)	return;
 
 	for (i = 0; i < queue->size; i++) {
-		printf("left : %x, right : %x, context : %s\n", node->left, node->right, node->context);
+		//printf("left : %x, right : %x, context : %s\n", node->left, node->right, node->context);
 		node = node->right;
 	}
 }
 
 int Empty_Queue(Queue *queue) {
-	if (queue->size > 0)
-		return 0;
+	if (queue->size > 0) {
+    Node *old, *tmp = queue->head;
+    while(tmp->right != NULL) {
+        old = tmp;
+        free(old->context);
+        free(old);
+        tmp = tmp->right;
+    }
+    queue->head = NULL;
+    queue->tail = NULL;
+    queue->size = 0; 
+    return 0;
+    }
 	else	return -1;
 }
 
@@ -65,7 +76,7 @@ int Enqueue(Queue *queue, char *str) {
 	}
 	queue->size++;
 	//printf("head : %x, tail : %x\n", queue->head, queue->tail);
-	printf("Enqueue %s\n", str);
+	//printf("Enqueue %s\n", str);
 	return 0;
 }
 
