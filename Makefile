@@ -4,3 +4,5 @@ calc.o: calc.c queue.h
 	gcc -c calc.c
 queue.o: queue.c queue.h
 	gcc -c queue.c
+pointqueue.o: pointqueue.c pointqueue.h
+    gcc -c pointqueue.c
