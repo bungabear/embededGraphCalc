@@ -1,3 +1,5 @@
+#ifndef POINTQUEUE_H
+#define POINTQUEUE_H
 typedef struct _PointNode {
     int x;
     int y;
@@ -17,3 +19,4 @@ int Enqueue_PointQueue(PointQueue *queue, int x, int y);
 int Dequeue_PointQueue(PointQueue *queue, int *x, int *y);
 int Pop_PointQueue(PointQueue *queue, int *x, int *y);
 int Push_PointQueue(PointQueue *queue, int x, int y);
+#endif

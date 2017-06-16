@@ -1,3 +1,5 @@
+#ifndef QUEUE_H
+#define QUEUE_H
 typedef struct _node {
 	char *context;
 	struct _node *left, *right;
@@ -16,3 +18,4 @@ int Enqueue(Queue *queue, char *str);
 char *Dequeue(Queue *queue);
 char *Pop(Queue *queue);
 int Push(Queue *queue, char *str);
+#endif

@@ -94,6 +94,8 @@ int main()
 {
 	int fd;
 	initScreen();	
+	Init_Queue(equationQueue);
+	Init_PointQueue(pointQueue);
 	fd = open("/dev/input/event4", O_RDWR);
 	if(fd<0) return -1;
 	int x = -1,y = -1, offset, touchButton;

@@ -180,4 +180,5 @@ void printChar(char charNum, int x, int y, unsigned short color, unsigned short 
 struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(const char *buttonStr);
 void drawGraph(char *str);
+
 #endif
