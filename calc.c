@@ -146,14 +146,7 @@ const long long font[130] = {
 	0x0F08080850503010	/* root */
 };
 
-// Buttons of screen. P is Pi, R is Root.
-const char buttonChar[32][5] =
-{
-	"y=", "x", "P", "(", ")", "Del", "^", "R",
-	"sin", "abs", "e", "7", "8", "9", "/", "-",
-	"cos", "ln", "%", "4", "5", "6", "*", "+",
-	"tan", "log", ".", "1", "2", "3", "0", "Draw"
-};
+
 // It is for touch screen calibration. [0] is start value, [1] is calib. value
 const int touchX[] = {180, 11};
 const int touchY[] = {190, 15};
