@@ -41,7 +41,7 @@ int Is_Empty_Queue(Queue *queue) {
 	if (queue->size > 0) {
     return 0;
     }
-	else	return -1;
+	else	return 1;
 }
 
 Node *Create_Node(char *str) {

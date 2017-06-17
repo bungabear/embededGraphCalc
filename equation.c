@@ -215,6 +215,15 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 				free(last_str);
 			}
 		}
+
+		if (cur_state == NUMBER && Is_Empty_Queue(equation)) {
+			if (last_str != NULL) {
+				res = Enqueue(infix, last_str);
+				if (res < 0) return 0;
+				free(last_str);
+				break;
+			}
+		}
 		last_state = cur_state;
 	}
 
@@ -274,22 +283,28 @@ String_Queue *Infix_To_Postfix(String_Queue *infix) {
 							if (res < 0) return 0;
 						}
 					}
-				}
-				else {
+				} else {
 					while (1) {
-						op = Pop(opStack);
-						last_priority = Operation_Priority(op);
-						if (last_priority >= priority) {
-							res = Enqueue(postfix, op);
-							if (res < 0) return 0;
+						if (!Is_Empty_Queue(opStack)) {
+							op = Pop(opStack);
+							last_priority = Operation_Priority(op);
+							if (last_priority >= priority) {
+								res = Enqueue(postfix, op);
+								if (res < 0) return 0;
+								continue;
+							}
+							else {
+								res = Push(opStack, op);
+								if (res < 0) return 0;
+								res = Push(opStack, str);
+								if (res < 0) return 0;
+								break;
+							}
 						} else {
-							res = Push(opStack, op);
-							if (res < 0) return 0;
 							res = Push(opStack, str);
 							if (res < 0) return 0;
 							break;
 						}
-
 					}
 				}
 			}

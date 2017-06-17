@@ -36,6 +36,7 @@ PointQueue *pointQueue;
 void connectPoint(int x1, int y1, int x2, int y2)
 {
     int i, half, tmp, x, offset;
+    printf("draw line (%d, %d) to (%d, %d)\n", x1, y1, x2, y2);
     if(y1 > y2)
     {
         tmp = x1;
@@ -53,15 +54,14 @@ void connectPoint(int x1, int y1, int x2, int y2)
         else x = x2;
         // TODO apply scales to calculate y's range.
         if(i < fontSize || i > graphHeight)
-	    {
+        {
             continue;
-	    }
+        }
         offset = x + fbvar.xres*i;
         *(pfbdata+offset) = 0x00ff;
     }
-    printf("draw line (%d, %d) to (%d, %d)\n", x1, y1, x2, y2);
 }
-int calcEquation(int x, Queue *postfix, int *errorno)
+double calcEquation(double x, Queue *postfix, int *errorno)
 {
     double y = 0, first, second;
     int err = 0;
@@ -79,33 +79,42 @@ int calcEquation(int x, Queue *postfix, int *errorno)
             // FUNCTION
             case 2:
                 first = Pop_DoubleQueue(stack);
-                if(strncmp(str, "sin" ,5))
+                if(strncmp(str, "sin" ,5) == 0)
                 {
                     first = sin(first);
                 }
-                else if(strncmp(str, "cos" ,5))
+                else if(strncmp(str, "cos" ,5) == 0)
                 {
                     first = cos(first);
                 }
-                else if(strncmp(str, "tan" ,5))
+                else if(strncmp(str, "tan" ,5) == 0)
                 {
                     first = tan(first);
                     // tan() doesn't return infinity.
-                    if(first > 370)
+                    if(first > 370 || first < -370)
                     {
                         err = 1; 
                     }
                 }
-                else if(strncmp(str, "ln" ,5))
+                else if(strncmp(str, "ln" ,5) == 0)
                 {
                     first = log(first);
                     err = errno;
                 }
-                else if(strncmp(str, "log" ,5))
+                else if(strncmp(str, "log" ,5) == 0)
                 {
                     first = log10(first);
                     err = errno;
                 }
+                else if(strncmp(str, "abs", 5) == 0)
+                {
+                    first = fabs(first);
+                }   
+                else if(strncmp(str, "R", 5) == 0)
+                {
+                    first = sqrt(first);
+                    err = errno;
+                }   
                 if(err != 0)
                 {
                     *errorno = err;
@@ -117,8 +126,8 @@ int calcEquation(int x, Queue *postfix, int *errorno)
                 break;
                 //OPERATION
             case 3:
-                first = Pop_DoubleQueue(stack);
                 second = Pop_DoubleQueue(stack);
+                first = Pop_DoubleQueue(stack);
                 switch(str[0])
                 {
                     case '+':
@@ -171,22 +180,13 @@ int calcEquation(int x, Queue *postfix, int *errorno)
                 Push_DoubleQueue(stack, atof(str));
                 break;
         }
+        tmp = tmp->right;
     }
-    //P     = M_PI
-    //x^y   = double pow(double x, double y)
-    //R     = double sqrt(double x)
-    //sin   = double sin(double x) cos, tan
-    //abs   = double abs(double x)
-    //e     = M_E
-    //ln    = double log(double x)
-    //log   = double long10(double x)
-    // + , - , * , / , %
-    // str to double double atof(const char *str)
-
+    y = Pop_DoubleQueue(stack);
     Clear_DoubleQueue(stack);
     free(stack);
     *errorno = err;
-    return (int)y;
+    return y;
 }
 
 void drawGraph(Queue *postfix)
@@ -242,7 +242,6 @@ void drawGraph(Queue *postfix)
     }
     if(postfix != NULL)
     {
-        // test Graph
         double i,j;
         int errorno = 0;
         for(x = graphXstart; x < graphWidth+graphXstart; x++)
@@ -277,44 +276,6 @@ void drawGraph(Queue *postfix)
             prex = x;
             prey = y;
         }
-    }
-    else 
-    {
-        // test Graph
-        double i,j;
-        int errorno = 0;
-        errno = 0;
-        for(x = graphXstart; x < graphWidth+graphXstart; x++)
-        {
-            // TODO calculate equation and draw line with in points 
-            i = x/(double)xScale;
-            j = tan(i);
-            if(errno != 0)
-            {
-                errno = 0;
-                continue;
-            }
-            j *= yScale;
-            Enqueue_PointQueue(pointQueue, x, (int)j);
-        }
-        // draw Line
-        // if Queue is empty, Dequeue return -1
-        int prex = -1, prey = -1;
-        Dequeue_PointQueue(pointQueue, &prex,&prey);
-        while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
-        {
-            x = x - graphXstart;
-            y = graphHeight - (y - graphYstart);
-            // if point x is not continual, skip draw a line.
-            if(x - prex == 1)
-            {
-                connectPoint(prex, prey, x, y);
-            }
-            //offset = x + fbvar.xres*y;
-            //*(pfbdata+offset) = 0x00ff;
-            prex = x;
-            prey = y;
-        }   
     }
 }
 int main()
@@ -418,11 +379,25 @@ void buttonTouch(int buttonNum)
     if(buttonNum == 31)
     {
         // clear equation and empty queue
-        drawGraph(NULL);
-        Clear_Queue(equationQueue);
-        memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
-        
-        return;
+        if(equationQueue->size < 2)
+            return;
+        Queue *infix = Reguler_equation(equationQueue);
+        if(infix != NULL || infix != -1)
+        {
+            Queue *postfix = Infix_To_Postfix(infix);
+            drawGraph(postfix);
+            Clear_Queue(equationQueue);
+            memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+
+            return;
+        }
+        else
+        {
+            // equation input error
+            memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+            printStr("Input Error", 0, 0, 0xffff, 0x0000);
+            return;
+        }
     }
     // Del button
     else if(buttonNum == 5)
@@ -441,6 +416,15 @@ void buttonTouch(int buttonNum)
         // else buttons
         Enqueue(equationQueue, buttonChar[buttonNum]);
         // check equation is correct, if not correct Dqeueue.
+        //if(equationQueue->size > 1)
+        //{
+        //    Queue *infix = Reguler_equation(equationQueue);
+        //    if(infix == NULL)
+        //    {
+        //        Dequeue(equationQueue);
+        //        return;
+        //    }
+        //}
         if(state[buttonNum] == FUNCTION)
         {
             // add ( for Function
