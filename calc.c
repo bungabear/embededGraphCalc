@@ -31,6 +31,7 @@ int graphYstart;
 // 10pixel per inteager x, y
 int xScale = 20;
 int yScale = 20;
+int mode = 0;
 Queue *equationQueue;
 PointQueue *pointQueue;
 Queue *graphQueue;
@@ -434,31 +435,43 @@ void buttonTouch(int buttonNum)
     // "Draw" button
     if(buttonNum == 31)
     {
-        // clear equation and empty queue
-        if(equationQueue->size < 2)
-            return;
-        Queue *infix = Reguler_equation(Copy_Queue(equationQueue));
-        if(infix != NULL || infix != -1)
+        // touch Draw
+        if(mode == 0)
         {
-            Queue *postfix = Infix_To_Postfix(infix);
-            drawGraph(postfix);
-            Clear_Queue(infix);
-            //memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
-            if(graphQueue != NULL)
+            // clear equation and empty queue
+            if(equationQueue->size < 2)
+                return;
+            Queue *infix = Reguler_equation(Copy_Queue(equationQueue));
+            if(infix != NULL)
             {
-                Clear_Queue(graphQueue);
-                free(graphQueue);
-            }
-            graphQueue = postfix;
+                Queue *postfix = Infix_To_Postfix(infix);
+                drawGraph(postfix);
+                Clear_Queue(infix);
+                //memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+                if(graphQueue != NULL)
+                {
+                    Clear_Queue(graphQueue);
+                    free(graphQueue);
+                }
+                graphQueue = postfix;
+                mode = 1;
+                printStr("Edit", buttonWidth*7+(buttonWidth-fontSize)/2*2 , fbvar.xres*buttonsYPos + buttonHeight*30 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
 
-            return;
+                return;
+
+            }
+            else
+            {
+                // incorrent equation
+                return;
+            }
         }
+        // touch Edit
         else
         {
-            // equation input error
-            memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
-            printStr("Input Error", 0, 0, 0xffff, 0x0000);
-            return;
+            mode = 0;
+            printStr("Draw", buttonWidth*7+(buttonWidth-fontSize)/2*2 , fbvar.xres*buttonsYPos + buttonHeight*30 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+
         }
     }
     // Del button
@@ -472,29 +485,35 @@ void buttonTouch(int buttonNum)
         // block y= twice
         if(buttonNum == 0 && equationQueue->size != 0)
             return;
-        // mush y= is first input
         if(equationQueue->size == 0)
         {
-            // -
-            if(buttonNum == 15)
+            if(mode == 1)
             {
-                xScale /=2;
-                yScale /=2;
-                drawGraph(graphQueue);
-                return;
+                // - in view mode
+                if(buttonNum == 15)
+                {
+                    xScale /=2;
+                    yScale /=2;
+                    drawGraph(graphQueue);
+                    return;
+                }
+                // + in view mode
+                else if(buttonNum == 23)
+                {
+                    xScale *=2;
+                    yScale *=2;
+                    drawGraph(graphQueue);
+                    return;
+                }
             }
-            // +
-            else if(buttonNum == 23)
+            else
             {
-                xScale *=2;
-                yScale *=2;
-                drawGraph(graphQueue);
-                return;
+                // mush y= is first input
+                if(buttonNum == 0)
+                {
+                }
+                else return;
             }
-            else if(buttonNum == 0)
-            {
-            }
-            else return;
         }
         // else buttons
         Enqueue(equationQueue, buttonChar[buttonNum]);
