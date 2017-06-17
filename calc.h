@@ -12,32 +12,38 @@
 //#define CONSTANT	5
 //#define NUMBER		6
 //#define DOT			7
-const int OPEN      = 0;
-const int CLOSE     = 1;
-const int FUNCTION  = 2;
+const int OPEN = 0;
+const int CLOSE = 1;
+const int FUNCTION = 2;
 const int OPERATION = 3;
-const int XVALUE    = 4;
-const int CONSTANT  = 5;
-const int NUMBER    = 6;
-const int DOT       = 7;
+const int XVALUE = 4;
+const int CONSTANT = 5;
+const int NUMBER = 6;
+const int DOT = 7;
+
+const int FIRST = 1;
+const int SECOND = 2;
+const int THIRD = 3;
+const int FOURTH = 4;
+
 //extern enum ={ OPEN, CLOSE, FUNCTION, OPERATION, XVALUE, CONSTANT, NUMBER, DOT};
 // Buttons of screen. P is Pi, R is Root.
 const char buttonChar[32][5] = {
-    //0     1       2       3       4       5       6       7
+	//0     1       2       3       4       5       6       7
 	"y=",   "x",    "P",    "(",    ")",    "Del",  "^",    "R",
-    //8     9       10      11      12      13      14      15
+	//8     9       10      11      12      13      14      15
 	"sin",  "abs",  "e",    "7",    "8",    "9",    "/",    "-",
-    //16    17      18      19      20      21      22      23
+	//16    17      18      19      20      21      22      23
 	"cos",  "ln",   "%",    "4",    "5",    "6",    "*",    "+",
-    //24    25      26      27      28      29      30      31
+	//24    25      26      27      28      29      30      31
 	"tan",  "log",  ".",    "1",    "2",    "3",    "0",    "Draw"
 };
 
 const int state[32] = {
-	-1,     4,      5,      0,      1,      -1,     2,      2,
-	2,      2,      5,      2,      2,      2,      2,      2,
-	2,      2,      2,      2,      2,      2,      2,      2,
-	2,      2,      7,      2,      2,      2,      2,      -1
+	-1,     4,      5,      0,      1,      -1,     3,      2,
+	2,      2,      5,      6,      6,      6,      3,      3,
+	2,      2,      3,      6,      6,      6,      3,      3,
+	2,      2,      7,      6,      6,      6,      6,      -1
 };
 
 
@@ -194,6 +200,5 @@ struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(int buttonNum);
 void drawGraph(Queue *postfix);
 void connectPoint(int x1, int y1, int x2, int y2);
-int calcEquation(int x, Queue *postfix, int *errorno);
 
 #endif

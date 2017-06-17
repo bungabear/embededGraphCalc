@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,17 +18,19 @@ void Print_Node(Queue *queue) {
 
 	for (i = 0; i < queue->size; i++) {
 		//printf("left : %x, right : %x, context : %s\n", node->left, node->right, node->context);
+		//printf(" %s |", node->context);
 		node = node->right;
 	}
+	//printf("\n");
 }
 
 void Clear_Queue(Queue *queue) {
     Node *old, *tmp = queue->head;
     while(tmp!= NULL) {
         old = tmp;
-        free(old->context);
+		if(old->context != NULL) free(old->context);
+		tmp = old->right;
         free(old);
-        tmp = tmp->right;
     }
     queue->head = NULL;
     queue->tail = NULL;

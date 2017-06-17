@@ -4,13 +4,19 @@
 #include "equation.h"
 
 extern const int OPEN;
-extern const int CLOSE;     
+extern const int CLOSE;
 extern const int FUNCTION;
-extern const int OPERATION; 
-extern const int XVALUE;    
-extern const int CONSTANT;  
-extern const int NUMBER;    
-extern const int DOT;       
+extern const int OPERATION;
+extern const int XVALUE;
+extern const int CONSTANT;
+extern const int NUMBER;
+extern const int DOT;
+
+extern const int FIRST;
+extern const int SECOND;
+extern const int THIRD;
+extern const int FOURTH;
+
 extern const int state[32];
 extern const char buttonChar[32][5];
 
@@ -18,6 +24,7 @@ int Confirm_Word(char *str) {
 
 	int i=0, len=0, size=0, index = -1;
 	size = sizeof(state) / sizeof(state[0]);
+
 	for (i = 0; i < size ; i++) {
 		len = strlen(str);
 		if (strncmp(str, buttonChar[i], len) == 0) {
@@ -25,12 +32,32 @@ int Confirm_Word(char *str) {
 			break;
 		}
 	}
+	if (i == size) return NUMBER;
+
 	return state[i];
 }
 
-String_Queue *Adjust_Parentheses(String_Queue *equation) {
+int Operation_Priority(char *str) {
+	int state = Confirm_Word(str);
+
+	if (state != OPERATION) {
+		return FIRST;
+	} else if (strncmp(str, "+", 1) == 0 || strncmp(str, "-", 1) == 0) {
+		return SECOND;
+	} 
+	else if (strncmp(str, "*", 1) == 0 || strncmp(str, "/", 1) == 0 || strncmp(str, "%", 1) == 0) {
+		return THIRD;
+	}
+	else if (strncmp(str, "^", 1) == 0 ) {
+		return FOURTH;
+	}
+	
+	return -1;
+}
+
+String_Queue *Adjust_Parentheses(String_Queue *eqution) {
 	int i, open=0, close=0;
-	String_Node *node = equation->head;
+	String_Node *node = eqution->head;
 
 	while(node != NULL) {
 		if (strncmp(node->context, "(", 1) == 0) {
@@ -43,13 +70,13 @@ String_Queue *Adjust_Parentheses(String_Queue *equation) {
 
 	if (open > close) {
 		for (i = 0; i < (open - close); i++) {
-			Enqueue(equation, ")");
+			Enqueue(eqution, ")");
 		}
 	} else if (open < close) {
 		printf("There are more closing parentheses\n");
 		return 0;
 	}
-	return equation;
+	return eqution;
 }
 
 String_Queue *Reguler_equation(String_Queue *equation) {
@@ -195,5 +222,87 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 }
 
 String_Queue *Infix_To_Postfix(String_Queue *infix) {
-	return 0;
+	String_Queue *postfix = (String_Queue*)malloc(sizeof(String_Queue));
+	if (postfix == NULL) return postfix;
+
+	String_Queue *opStack = (String_Queue*)malloc(sizeof(String_Queue));
+	if (opStack == NULL) return 0;
+
+	char *str, *op;
+	int state, res, tmp;
+	int priority, last_priority;
+
+	Init_Queue(postfix);
+	Init_Queue(opStack);
+
+	while (!Is_Empty_Queue(infix))
+	{
+		str = Dequeue(infix);
+
+		state = Confirm_Word(str);
+		if (state == NUMBER || state == CONSTANT || state == XVALUE) {
+			res = Enqueue(postfix, str);
+			if (res < -1) return 0;
+		}
+		else {
+			if (!Is_Empty_Queue(opStack)) {
+				priority = Operation_Priority(str);
+				if (priority < 0) return 0;
+
+				if (priority == FIRST) {
+					tmp = Confirm_Word(str);
+					if (tmp == FUNCTION || tmp == OPEN) {
+						res = Push(opStack, str);
+						if (res < 0) return 0;
+					}
+					else if (tmp == CLOSE) {
+						while (1)
+						{
+							op = Pop(opStack);
+							if (Confirm_Word(op) == OPEN) break;
+							res = Enqueue(postfix, op);
+							if (res < 0) return 0;
+						}
+
+						op = Pop(opStack);
+						if (Confirm_Word(op) == OPEN) {
+							res = Enqueue(opStack, op);
+							if (res < 0) return 0;
+						}
+						else {
+							res = Push(postfix, op);
+							if (res < 0) return 0;
+						}
+					}
+				}
+				else {
+					while (1) {
+						op = Pop(opStack);
+						last_priority = Operation_Priority(op);
+						if (last_priority >= priority) {
+							res = Enqueue(postfix, op);
+							if (res < 0) return 0;
+						} else {
+							res = Push(opStack, op);
+							if (res < 0) return 0;
+							res = Push(opStack, str);
+							if (res < 0) return 0;
+							break;
+						}
+
+					}
+				}
+			}
+			else
+				Push(opStack, str);
+		}
+	}
+
+	while (!Is_Empty_Queue(opStack)) {
+		str = Pop(opStack);
+		res = Enqueue(postfix, str);
+		if (res < 0) return -1;
+	}
+
+	return postfix;
 }
