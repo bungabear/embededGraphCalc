@@ -30,7 +30,7 @@ const int FOURTH = 4;
 // Buttons of screen. P is Pi, R is Root.
 const char buttonChar[32][5] = {
 	//0     1       2       3       4       5       6       7
-	"y=",   "x",    "P",    "(",    ")",    "Del",  "^",    "R",
+	"y=",   "x",    "P",    "(",    ")",    "<-",  "^",    "R",
 	//8     9       10      11      12      13      14      15
 	"sin",  "abs",  "e",    "7",    "8",    "9",    "/",    "-",
 	//16    17      18      19      20      21      22      23

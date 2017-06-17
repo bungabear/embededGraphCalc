@@ -91,7 +91,8 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                 {
                     first = tan(first);
                     // tan() doesn't return infinity.
-                    if(first > 370 || first < -370)
+                    // showable y :  graphYstart < Y < graphHeight + graphYstart 
+                    if(graphYstart > first || graphYstart + graphHeight < first)
                     {
                         err = 1; 
                     }
@@ -271,6 +272,7 @@ void drawGraph(Queue *postfix)
             {
                 connectPoint(prex, prey, x, y);
             }
+            //else
             //offset = x + fbvar.xres*y;
             //*(pfbdata+offset) = 0x00ff;
             prex = x;
