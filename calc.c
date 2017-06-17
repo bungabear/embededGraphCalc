@@ -100,12 +100,14 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                 else if(strncmp(str, "ln" ,5) == 0)
                 {
                     first = log(first);
-                    err = errno;
+                    if(isnan(first))
+                        err = errno;
                 }
                 else if(strncmp(str, "log" ,5) == 0)
                 {
                     first = log10(first);
-                    err = errno;
+                    if(isnan(first))
+                        err = errno;
                 }
                 else if(strncmp(str, "abs", 5) == 0)
                 {
@@ -114,7 +116,8 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                 else if(strncmp(str, "R", 5) == 0)
                 {
                     first = sqrt(first);
-                    err = errno;
+                    if(isnan(first))
+                        err = errno;
                 }   
                 if(err != 0)
                 {
