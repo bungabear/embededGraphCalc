@@ -56,7 +56,7 @@ void connectPoint(int x1, int y1, int x2, int y2)
             x = x1;
         else x = x2;
         // TODO apply scales to calculate y's range.
-        if(i < fontSize || i > graphHeight)
+        if(i < fontSize || i > graphHeight + fontSize)
         {
             continue;
         }
@@ -205,7 +205,7 @@ void drawGraph(Queue *postfix)
         xPadding = xPadding >> 2;
     }
     // paint background to white
-    for(y = fontSize; y < graphHeight; y++)
+    for(y = fontSize; y < graphHeight + fontSize; y++)
     {
         for(x = xPadding; x < graphWidth - xPadding; x++)
         {
@@ -215,7 +215,7 @@ void drawGraph(Queue *postfix)
     }
 
     //xStart is pixels. 
-    for(y = fontSize; y < graphHeight; y++)
+    for(y = fontSize; y < graphHeight + fontSize; y++)
     {
         for(x = xPadding; x < graphWidth; x++)
         {
@@ -233,7 +233,7 @@ void drawGraph(Queue *postfix)
                 }
             }
             // draw X Line
-            else if(graphYstart + y == 0)
+            else if(graphYstart + y - fontSize == 0)
             {
                 *(pfbdata + x + fbvar.xres*y) = 0x0;	
                 // draw scale
@@ -267,12 +267,12 @@ void drawGraph(Queue *postfix)
         // draw Line
         // if Queue is empty, Dequeue return -1
         int prex, prey;
-        Dequeue_PointQueue(pointQueue, &prex,&prey);
 	int preyover = 0, yover = 0;
+        Dequeue_PointQueue(pointQueue, &prex,&prey);
         prex = prex - graphXstart;
 	if(prey == INT_MIN)
 	{
-		prey = graphHeight;
+		prey = graphHeight + fontSize;
 		preyover = 1;
 	}
 	else if(prey == INT_MAX)
@@ -281,13 +281,13 @@ void drawGraph(Queue *postfix)
 		preyover = 1;
 	}
 	else
-		prey = graphHeight - prey + graphYstart;
+		prey = graphHeight - prey + graphYstart + fontSize;
         while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
         {
             x = x - graphXstart;
 	    if(y == INT_MIN)
 	    {
-		    y = graphHeight;
+		    y = graphHeight + fontSize;
 		    yover = -1;
 	    }
 	    else if(y == INT_MAX)
@@ -296,7 +296,7 @@ void drawGraph(Queue *postfix)
 		    yover = -1;
 	    }
 	    else
-		    y = graphHeight - y + graphYstart;
+		    y = graphHeight - y + graphYstart + fontSize;
             //printf("set  x : %d, y : %d\n", x, y);
             // if point x is not continual, skip draw a line.
             if(x - prex == 1)
@@ -306,9 +306,9 @@ void drawGraph(Queue *postfix)
                     prey = fontSize;
 		    preyover = 1;
                 }
-		else if(prey > graphHeight)
+		else if(prey > graphHeight + fontSize)
 		{
-                    prey = graphHeight;
+                    prey = graphHeight + fontSize;
 		    preyover = 1;
                 }
 		if(y < fontSize)
@@ -316,9 +316,9 @@ void drawGraph(Queue *postfix)
                     y = fontSize;
 		    yover = -1;
                 }
-		else if(y > graphHeight)
+		else if(y > graphHeight + fontSize)
 		{
-                    y = graphHeight;
+                    y = graphHeight + fontSize;
 		    yover = -1;
 		}
 		if(preyover != 1 && yover != -1)
@@ -498,8 +498,8 @@ void buttonTouch(int buttonNum)
 		printStr("Draw", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
 		printStr("    ", buttonWidth*5+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
 		printStr("<-", buttonWidth*5+(buttonWidth-fontSize*2)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+		return;
 	}
-	return;
     }
     else if(mode == 0)
     {
@@ -507,7 +507,7 @@ void buttonTouch(int buttonNum)
 	    if(buttonNum == 0 && equationQueue->size != 0)
 		    return;
 	    if(buttonNum != 0 && equationQueue->size == 0)
-	    	return;
+		    return;
 	    // mush y= is first input
 	    // else buttons
 	    Enqueue(equationQueue, buttonChar[buttonNum]);
@@ -528,37 +528,6 @@ void buttonTouch(int buttonNum)
 		    Enqueue(equationQueue, "(");
 
 	    }
-	    int i,j;
-	    char *str;
-	    Node *tmp;
-	    if(equationQueue->size !=0)
-	    {
-		    tmp = equationQueue->head;
-	    }
-	    for(i = 0, j = 0 ; i < equationQueue->size; i++)
-	    {
-		    j += strlen(tmp->context);
-		    tmp = tmp->right;
-	    }
-	    tmp = equationQueue->head;
-	    str = malloc(j+1);
-	    memset(str, '\0', j+1);
-	    for(i = 0, j = 0 ; i < equationQueue->size; i++)
-	    {
-		    strcpy(&str[j], tmp->context);
-		    j += strlen(tmp->context);
-		    tmp = tmp->right;
-	    }
-
-	    if(j > 40)
-		    j -= 40;
-	    else j = 0;
-
-	    memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
-	    printStr(&str[j], 0, 0, 0xffff, 0x0000);
-	    printf("%s\n", str);
-	    fflush(stdout);
-	    free(str);
     }
     else
     {
@@ -579,6 +548,37 @@ void buttonTouch(int buttonNum)
 		    return;
 	    }
     }
+    int i,j;
+    char *str;
+    Node *tmp;
+    if(equationQueue->size !=0)
+    {
+	    tmp = equationQueue->head;
+    }
+    for(i = 0, j = 0 ; i < equationQueue->size; i++)
+    {
+	    j += strlen(tmp->context);
+	    tmp = tmp->right;
+    }
+    tmp = equationQueue->head;
+    str = malloc(j+1);
+    memset(str, '\0', j+1);
+    for(i = 0, j = 0 ; i < equationQueue->size; i++)
+    {
+	    strcpy(&str[j], tmp->context);
+	    j += strlen(tmp->context);
+	    tmp = tmp->right;
+    }
+
+    if(j > 40)
+	    j -= 40;
+    else j = 0;
+
+    memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+    printStr(&str[j], 0, 0, 0xffff, 0x0000);
+    printf("%s\n", str);
+    fflush(stdout);
+    free(str);
 }
 struct timeval elapsedTime(struct timeval prev)
 {
