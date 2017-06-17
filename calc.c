@@ -59,6 +59,7 @@ void connectPoint(int x1, int y1, int x2, int y2)
         offset = x + fbvar.xres*i;
         *(pfbdata+offset) = 0x00ff;
     }
+    printf("draw line (%d, %d) to (%d, %d)\n", x1, y1, x2, y2);
 }
 int calcEquation(int x, Queue *postfix, int *errorno)
 {
@@ -89,6 +90,11 @@ int calcEquation(int x, Queue *postfix, int *errorno)
                 else if(strncmp(str, "tan" ,5))
                 {
                     first = tan(first);
+                    // tan() doesn't return infinity.
+                    if(first > 370)
+                    {
+                        err = 1; 
+                    }
                 }
                 else if(strncmp(str, "ln" ,5))
                 {
@@ -234,39 +240,82 @@ void drawGraph(Queue *postfix)
             }
         }
     }
-    // test Graph
-    double i,j;
-    int errorno = 0;
-    for(x = graphXstart; x < graphWidth+graphXstart; x++)
+    if(postfix != NULL)
     {
-        // TODO calculate equation and draw line with in points 
-        i = x/(double)xScale;
-        j = calcEquation(i, postfix, &errorno);
-        if(errorno != 0)
-            continue;
-        j *= yScale;
-        Enqueue_PointQueue(pointQueue, x, (int)j);
-    }
-    // draw Line
-    // if Queue is empty, Dequeue return -1
-    int prex = -1, prey = -1;
-    Dequeue_PointQueue(pointQueue, &prex,&prey);
-    while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
-    {
-        printf("point x : %d, y : %d,\t", x, y);
-	    x = x - graphXstart;
-        y = graphHeight - (y - graphYstart);
-        printf("set  x : %d, y : %d\n", x, y);
-        // if point x is not continual, skip draw a line.
-        if(x - prex == 1)
+        // test Graph
+        double i,j;
+        int errorno = 0;
+        for(x = graphXstart; x < graphWidth+graphXstart; x++)
         {
-            connectPoint(prex, prey, x, y);
+            // TODO calculate equation and draw line with in points 
+            i = x/(double)xScale;
+            j = calcEquation(i, postfix, &errorno);
+            if(errorno != 0)
+            {
+                errorno = 0;
+                continue;
+            }
+            j *= yScale;
+            Enqueue_PointQueue(pointQueue, x, (int)j);
         }
-        //offset = x + fbvar.xres*y;
-        //*(pfbdata+offset) = 0x00ff;
-        prex = x;
-        prey = y;
-    }   
+        // draw Line
+        // if Queue is empty, Dequeue return -1
+        int prex = -1, prey = -1;
+        Dequeue_PointQueue(pointQueue, &prex,&prey);
+        while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
+        {
+            x = x - graphXstart;
+            y = graphHeight - (y - graphYstart);
+            //printf("set  x : %d, y : %d\n", x, y);
+            // if point x is not continual, skip draw a line.
+            if(x - prex == 1)
+            {
+                connectPoint(prex, prey, x, y);
+            }
+            //offset = x + fbvar.xres*y;
+            //*(pfbdata+offset) = 0x00ff;
+            prex = x;
+            prey = y;
+        }
+    }
+    else 
+    {
+        // test Graph
+        double i,j;
+        int errorno = 0;
+        errno = 0;
+        for(x = graphXstart; x < graphWidth+graphXstart; x++)
+        {
+            // TODO calculate equation and draw line with in points 
+            i = x/(double)xScale;
+            j = tan(i);
+            if(errno != 0)
+            {
+                errno = 0;
+                continue;
+            }
+            j *= yScale;
+            Enqueue_PointQueue(pointQueue, x, (int)j);
+        }
+        // draw Line
+        // if Queue is empty, Dequeue return -1
+        int prex = -1, prey = -1;
+        Dequeue_PointQueue(pointQueue, &prex,&prey);
+        while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
+        {
+            x = x - graphXstart;
+            y = graphHeight - (y - graphYstart);
+            // if point x is not continual, skip draw a line.
+            if(x - prex == 1)
+            {
+                connectPoint(prex, prey, x, y);
+            }
+            //offset = x + fbvar.xres*y;
+            //*(pfbdata+offset) = 0x00ff;
+            prex = x;
+            prey = y;
+        }   
+    }
 }
 int main()
 {
