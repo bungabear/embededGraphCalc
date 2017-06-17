@@ -2,17 +2,20 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<string.h>
+#include<math.h>
+#include<errno.h>
 #include<fcntl.h>
 #include<linux/fb.h>
 #include<sys/mman.h>
 #include<sys/ioctl.h>
 #include<sys/types.h>
 #include<linux/input.h>
-#include<math.h>
 #include<sys/time.h>
-#include"calc.h"
 #include"queue.h"
 #include"pointqueue.h"
+#include"doublequeue.h"
+#include"equation.h"
+#include"calc.h"
 
 unsigned short *pfbdata;
 struct fb_var_screeninfo fbvar;
@@ -48,7 +51,7 @@ void connectPoint(int x1, int y1, int x2, int y2)
         if(i< half)
             x = x1;
         else x = x2;
-
+        // TODO apply scales to calculate y's range.
         if(i < fontSize || i > graphHeight)
 	    {
             continue;
@@ -56,6 +59,128 @@ void connectPoint(int x1, int y1, int x2, int y2)
         offset = x + fbvar.xres*i;
         *(pfbdata+offset) = 0x00ff;
     }
+}
+int calcEquation(int x, Queue *postfix, int *errorno)
+{
+    double y = 0, first, second;
+    int err = 0;
+    char *str;
+    DoubleQueue *stack;
+    stack = malloc(sizeof(DoubleQueue));
+    Init_DoubleQueue(stack);
+    Node *tmp = postfix->head;
+    while(tmp != NULL)
+    {
+        errno = 0;
+        str = tmp->context;
+        switch(Confirm_Word(str))
+        {
+            // FUNCTION
+            case 2:
+                first = Pop_DoubleQueue(stack);
+                if(strncmp(str, "sin" ,5))
+                {
+                    first = sin(first);
+                }
+                else if(strncmp(str, "cos" ,5))
+                {
+                    first = cos(first);
+                }
+                else if(strncmp(str, "tan" ,5))
+                {
+                    first = tan(first);
+                }
+                else if(strncmp(str, "ln" ,5))
+                {
+                    first = log(first);
+                    err = errno;
+                }
+                else if(strncmp(str, "log" ,5))
+                {
+                    first = log10(first);
+                    err = errno;
+                }
+                if(err != 0)
+                {
+                    *errorno = err;
+                    Clear_DoubleQueue(stack);
+                    free(stack);
+                    return -1;
+                }   
+                Push_DoubleQueue(stack,first);
+                break;
+                //OPERATION
+            case 3:
+                first = Pop_DoubleQueue(stack);
+                second = Pop_DoubleQueue(stack);
+                switch(str[0])
+                {
+                    case '+':
+                        first = first + second;
+                        break;
+                    case '-':
+                        first = first - second;
+                        break;
+                    case '*':
+                        first = first * second;
+                        break;
+                    case '/':
+                        if(second == 0)
+                        {
+                            *errorno = 1;
+                            Clear_DoubleQueue(stack);
+                            free(stack);
+                            return -1;
+                        }
+                        else
+                            first = first / second;
+                        break;
+                    case '%':
+                        first = first + second;
+                        break;
+                    case '^':
+                        first = pow(first, second);
+                        break;
+                }
+                Push_DoubleQueue(stack,first);
+                break;
+                // XVALUE
+            case 4:
+                Push_DoubleQueue(stack, x);
+                break;
+                // CONSTANT
+            case 5:
+                switch(str[0])
+                {
+                    case 'P':
+                        Push_DoubleQueue(stack, M_PI);
+                        break;
+                    case 'e':
+                        Push_DoubleQueue(stack, M_E);
+                        break;
+                }
+                break;
+                //NUMBER
+            case 6:
+                Push_DoubleQueue(stack, atof(str));
+                break;
+        }
+    }
+    //P     = M_PI
+    //x^y   = double pow(double x, double y)
+    //R     = double sqrt(double x)
+    //sin   = double sin(double x) cos, tan
+    //abs   = double abs(double x)
+    //e     = M_E
+    //ln    = double log(double x)
+    //log   = double long10(double x)
+    // + , - , * , / , %
+    // str to double double atof(const char *str)
+
+    Clear_DoubleQueue(stack);
+    free(stack);
+    *errorno = err;
+    return (int)y;
 }
 
 void drawGraph(Queue *postfix)
@@ -111,12 +236,15 @@ void drawGraph(Queue *postfix)
     }
     // test Graph
     double i,j;
+    int errorno = 0;
     for(x = graphXstart; x < graphWidth+graphXstart; x++)
     {
         // TODO calculate equation and draw line with in points 
-	i = x/(double)xScale;
-        j = i*i*i;
-	j *= yScale;
+        i = x/(double)xScale;
+        j = calcEquation(i, postfix, &errorno);
+        if(errorno != 0)
+            continue;
+        j *= yScale;
         Enqueue_PointQueue(pointQueue, x, (int)j);
     }
     // draw Line
@@ -129,7 +257,11 @@ void drawGraph(Queue *postfix)
 	    x = x - graphXstart;
         y = graphHeight - (y - graphYstart);
         printf("set  x : %d, y : %d\n", x, y);
-        connectPoint(prex, prey, x, y);
+        // if point x is not continual, skip draw a line.
+        if(x - prex == 1)
+        {
+            connectPoint(prex, prey, x, y);
+        }
         //offset = x + fbvar.xres*y;
         //*(pfbdata+offset) = 0x00ff;
         prex = x;
@@ -259,6 +391,7 @@ void buttonTouch(int buttonNum)
             return;
         // else buttons
         Enqueue(equationQueue, buttonChar[buttonNum]);
+        // check equation is correct, if not correct Dqeueue.
         if(state[buttonNum] == FUNCTION)
         {
             // add ( for Function

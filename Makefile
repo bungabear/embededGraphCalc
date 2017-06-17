@@ -1,11 +1,11 @@
 CC = gcc
-OBJECTS = calc.o queue.o pointqueue.o
-CFLAGS = -g -c
+OBJECTS = calc.o queue.o pointqueue.o doublequeue.o equation.o
+CFLAGS = -g
  
 TARGET = calc 
- 
+
 $(TARGET) : $(OBJECTS)
-	$(CC) -o $(TARGET) $(OBJECTS)
+	$(CC) -o $(TARGET) $(OBJECTS) $(CFLAGS) -lm
                
 clean : 
 	rm -f $(OBJECTS) $(TARGET)

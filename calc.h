@@ -4,16 +4,23 @@
 #include "queue.h"
 
 #define FBDEVFILE "/dev/fb2"
-
-#define OPEN		0
-#define CLOSE		1
-#define FUNCTION		2
-#define OPERATION	3
-#define UNKNOWN		4
-#define CONSTANT	5
-#define NUMBER		6
-#define DOT			7
-
+//#define OPEN		0
+//#define CLOSE		1
+//#define FUNCTION		2
+//#define OPERATION	3
+//#define XVALUE		4
+//#define CONSTANT	5
+//#define NUMBER		6
+//#define DOT			7
+const int OPEN      = 0;
+const int CLOSE     = 1;
+const int FUNCTION  = 2;
+const int OPERATION = 3;
+const int XVALUE    = 4;
+const int CONSTANT  = 5;
+const int NUMBER    = 6;
+const int DOT       = 7;
+//extern enum ={ OPEN, CLOSE, FUNCTION, OPERATION, XVALUE, CONSTANT, NUMBER, DOT};
 // Buttons of screen. P is Pi, R is Root.
 const char buttonChar[32][5] = {
     //0     1       2       3       4       5       6       7
@@ -27,10 +34,10 @@ const char buttonChar[32][5] = {
 };
 
 const int state[32] = {
-	-1,         UNKNOWN,    CONSTANT,   OPEN,   CLOSE,  -1,     OPERATION, FUNCTION,
-	FUNCTION,   FUNCTION,   CONSTANT,   NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
-	FUNCTION,   FUNCTION,   OPERATION,  NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
-	FUNCTION,   FUNCTION,   DOT,        NUMBER, NUMBER, NUMBER, NUMBER,    -1
+	-1,     4,      5,      0,      1,      -1,     2,      2,
+	2,      2,      5,      2,      2,      2,      2,      2,
+	2,      2,      2,      2,      2,      2,      2,      2,
+	2,      2,      7,      2,      2,      2,      2,      -1
 };
 
 
@@ -187,5 +194,6 @@ struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(int buttonNum);
 void drawGraph(Queue *postfix);
 void connectPoint(int x1, int y1, int x2, int y2);
+int calcEquation(int x, Queue *postfix, int *errorno);
 
 #endif
