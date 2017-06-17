@@ -32,9 +32,9 @@ int graphYstart;
 int xScale = 20;
 int yScale = 20;
 int mode = 0;
-Queue *equationQueue;
-PointQueue *pointQueue;
-Queue *graphQueue;
+Queue *equationQueue = NULL;
+PointQueue *pointQueue = NULL;
+Queue *graphQueue = NULL;
 
 void connectPoint(int x1, int y1, int x2, int y2)
 {
@@ -321,9 +321,8 @@ void drawGraph(Queue *postfix)
                     y = graphHeight;
 		    yover = -1;
 		}
-		if(preyover == 1 && yover == -1)
-			continue;
-                connectPoint(prex + preyover, prey, x + yover, y);
+		if(preyover != 1 && yover != -1)
+			connectPoint(prex + preyover, prey, x + yover, y);
             }
             //else
             //offset = x + fbvar.xres*y;
@@ -441,12 +440,17 @@ void buttonTouch(int buttonNum)
             // clear equation and empty queue
             if(equationQueue->size < 2)
                 return;
-            Queue *infix = Reguler_equation(Copy_Queue(equationQueue));
+
+	    Queue *tmp = Copy_Queue(equationQueue);
+            Queue *infix = Reguler_equation(tmp);
+	    Clear_Queue(tmp);
+	    free(tmp);
             if(infix != NULL)
             {
                 Queue *postfix = Infix_To_Postfix(infix);
                 drawGraph(postfix);
                 Clear_Queue(infix);
+		free(infix);
                 //memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
                 if(graphQueue != NULL)
                 {
@@ -455,116 +459,126 @@ void buttonTouch(int buttonNum)
                 }
                 graphQueue = postfix;
                 mode = 1;
-                printStr("Edit", buttonWidth*7+(buttonWidth-fontSize)/2*2 , fbvar.xres*buttonsYPos + buttonHeight*30 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-
-                return;
-
-            }
-            else
-            {
-                // incorrent equation
-                return;
+                printStr("Edit", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+                printStr("Cls", buttonWidth*5+(buttonWidth-fontSize*3)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
             }
         }
         // touch Edit
         else
         {
             mode = 0;
-            printStr("Draw", buttonWidth*7+(buttonWidth-fontSize)/2*2 , fbvar.xres*buttonsYPos + buttonHeight*30 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-
+            printStr("Draw", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+            printStr("    ", buttonWidth*5+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+            printStr("<-", buttonWidth*5+(buttonWidth-fontSize*2)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
         }
+	return;
     }
     // Del button
     else if(buttonNum == 5)
     {
-        // Pop For delete one
-        Pop(equationQueue);
+    	if(mode == 0)
+	{
+		// Pop For delete one
+		Pop(equationQueue);
+	}
+	else
+	{
+		printf("Cls\n");
+		graphXstart = (-graphWidth/2);
+		graphYstart = (-graphHeight/2);
+		xScale = 20;
+		yScale = 20;
+		drawGraph(NULL);
+		Clear_Queue(graphQueue);
+		Clear_Queue(equationQueue);
+		free(graphQueue);
+		graphQueue = NULL;
+                memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+		mode = 0;
+		printStr("Draw", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+		printStr("    ", buttonWidth*5+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+		printStr("<-", buttonWidth*5+(buttonWidth-fontSize*2)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+	}
+	return;
+    }
+    else if(mode == 0)
+    {
+	    // block y= twice
+	    if(buttonNum == 0 && equationQueue->size != 0)
+		    return;
+	    if(buttonNum != 0 && equationQueue->size == 0)
+	    	return;
+	    // mush y= is first input
+	    // else buttons
+	    Enqueue(equationQueue, buttonChar[buttonNum]);
+
+	    // check equation is correct, if not correct Dqeueue.
+	    //if(equationQueue->size > 1)
+	    //{
+	    //    Queue *infix = Reguler_equation(equationQueue);
+	    //    if(infix == NULL)
+	    //    {
+	    //        Dequeue(equationQueue);
+	    //        return;
+	    //    }
+	    //}
+	    if(state[buttonNum] == FUNCTION)
+	    {
+		    // add ( for Function
+		    Enqueue(equationQueue, "(");
+
+	    }
+	    int i,j;
+	    char *str;
+	    Node *tmp;
+	    if(equationQueue->size !=0)
+	    {
+		    tmp = equationQueue->head;
+	    }
+	    for(i = 0, j = 0 ; i < equationQueue->size; i++)
+	    {
+		    j += strlen(tmp->context);
+		    tmp = tmp->right;
+	    }
+	    tmp = equationQueue->head;
+	    str = malloc(j+1);
+	    memset(str, '\0', j+1);
+	    for(i = 0, j = 0 ; i < equationQueue->size; i++)
+	    {
+		    strcpy(&str[j], tmp->context);
+		    j += strlen(tmp->context);
+		    tmp = tmp->right;
+	    }
+
+	    if(j > 40)
+		    j -= 40;
+	    else j = 0;
+
+	    memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+	    printStr(&str[j], 0, 0, 0xffff, 0x0000);
+	    printf("%s\n", str);
+	    fflush(stdout);
+	    free(str);
     }
     else
     {
-        // block y= twice
-        if(buttonNum == 0 && equationQueue->size != 0)
-            return;
-        if(equationQueue->size == 0)
-        {
-            if(mode == 1)
-            {
-                // - in view mode
-                if(buttonNum == 15)
-                {
-                    xScale /=2;
-                    yScale /=2;
-                    drawGraph(graphQueue);
-                    return;
-                }
-                // + in view mode
-                else if(buttonNum == 23)
-                {
-                    xScale *=2;
-                    yScale *=2;
-                    drawGraph(graphQueue);
-                    return;
-                }
-            }
-            else
-            {
-                // mush y= is first input
-                if(buttonNum == 0)
-                {
-                }
-                else return;
-            }
-        }
-        // else buttons
-        Enqueue(equationQueue, buttonChar[buttonNum]);
-        // check equation is correct, if not correct Dqeueue.
-        //if(equationQueue->size > 1)
-        //{
-        //    Queue *infix = Reguler_equation(equationQueue);
-        //    if(infix == NULL)
-        //    {
-        //        Dequeue(equationQueue);
-        //        return;
-        //    }
-        //}
-        if(state[buttonNum] == FUNCTION)
-        {
-            // add ( for Function
-            Enqueue(equationQueue, "(");
-
-        }
+	    // - in view mode
+	    if(buttonNum == 15)
+	    {
+		    xScale /=2;
+		    yScale /=2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
+	    // + in view mode
+	    else if(buttonNum == 23)
+	    {
+		    xScale *=2;
+		    yScale *=2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
     }
-    int i,j;
-    char *str;
-    Node *tmp;
-    if(equationQueue->size !=0)
-    {
-        tmp = equationQueue->head;
-    }
-    for(i = 0, j = 0 ; i < equationQueue->size; i++)
-    {
-        j += strlen(tmp->context);
-        tmp = tmp->right;
-    }
-    tmp = equationQueue->head;
-    str = malloc(j+1);
-    memset(str, '\0', j+1);
-    for(i = 0, j = 0 ; i < equationQueue->size; i++)
-    {
-        strcpy(&str[j], tmp->context);
-        j += strlen(tmp->context);
-        tmp = tmp->right;
-    }
-
-    if(j > 40)
-        j -= 40;
-    else j = 0;
-
-    memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
-    printStr(&str[j], 0, 0, 0xffff, 0x0000);
-    printf("%s\n", str);
-    fflush(stdout);
-    free(str);
 }
 struct timeval elapsedTime(struct timeval prev)
 {
