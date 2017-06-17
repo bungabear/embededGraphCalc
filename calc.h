@@ -27,10 +27,10 @@ const char buttonChar[32][5] = {
 };
 
 const int state[32] = {
-	-1, UNKNOWN, CONSTANT, OPEN, CLOSE, -1, OPERATION, FUNCTION,
-	FUNCTION, FUNCTION, CONSTANT, NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
-	FUNCTION, FUNCTION, OPERATION, NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
-	FUNCTION, FUNCTION, DOT, NUMBER, NUMBER, NUMBER, NUMBER, -1
+	-1,         UNKNOWN,    CONSTANT,   OPEN,   CLOSE,  -1,     OPERATION, FUNCTION,
+	FUNCTION,   FUNCTION,   CONSTANT,   NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
+	FUNCTION,   FUNCTION,   OPERATION,  NUMBER, NUMBER, NUMBER, OPERATION, OPERATION,
+	FUNCTION,   FUNCTION,   DOT,        NUMBER, NUMBER, NUMBER, NUMBER,    -1
 };
 
 
@@ -169,7 +169,7 @@ const long long font[130] = {
         0x0F08080850503010  /* root */
 };
 
-// It is for touch screen calibration. [0] is start value, [1] is calib. value
+// for touch calibration. [0] is start value, [1] is calib. value
 const int touchX[] = {180, 11};
 const int touchY[] = {190, 15};
 // Button's size in screen
@@ -186,5 +186,6 @@ void printChar(char charNum, int x, int y, unsigned short color, unsigned short 
 struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(int buttonNum);
 void drawGraph(Queue *postfix);
+void connectPoint(int x1, int y1, int x2, int y2);
 
 #endif

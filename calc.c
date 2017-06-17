@@ -30,6 +30,34 @@ int yScale = 20;
 Queue *equationQueue;
 PointQueue *pointQueue;
 
+void connectPoint(int x1, int y1, int x2, int y2)
+{
+    int i, half, tmp, x, offset;
+    if(y1 > y2)
+    {
+        tmp = x1;
+        x1 = x2;
+        x2 = tmp;
+        tmp = y1;
+        y1 = y2;
+        y2 = tmp;
+    }
+    half = y2 - (y2 - y1)/2;
+    for(i = y1; i <= y2; i++)
+    {
+        if(i< half)
+            x = x1;
+        else x = x2;
+
+        if(i < fontSize || i > graphHeight)
+	    {
+            continue;
+	    }
+        offset = x + fbvar.xres*i;
+        *(pfbdata+offset) = 0x00ff;
+    }
+}
+
 void drawGraph(Queue *postfix)
 {
     int xPadding = 0, offset, x, y, z;
@@ -93,18 +121,19 @@ void drawGraph(Queue *postfix)
     }
     // draw Line
     // if Queue is empty, Dequeue return -1
+    int prex = -1, prey = -1;
+    Dequeue_PointQueue(pointQueue, &prex,&prey);
     while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
     {
         printf("point x : %d, y : %d,\t", x, y);
-	x = x - graphXstart;
+	    x = x - graphXstart;
         y = graphHeight - (y - graphYstart);
         printf("set  x : %d, y : %d\n", x, y);
-        if(y < fontSize || y > graphHeight)
-	{
-            continue;
-	}
-        offset = x + fbvar.xres*y;
-        *(pfbdata+offset) = 0x00ff;
+        connectPoint(prex, prey, x, y);
+        //offset = x + fbvar.xres*y;
+        //*(pfbdata+offset) = 0x00ff;
+        prex = x;
+        prey = y;
     }   
 }
 int main()
