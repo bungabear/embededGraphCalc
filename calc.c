@@ -437,14 +437,18 @@ void buttonTouch(int buttonNum)
         // clear equation and empty queue
         if(equationQueue->size < 2)
             return;
-        Queue *infix = Reguler_equation(equationQueue);
+        Queue *infix = Reguler_equation(Copy_Queue(equationQueue));
         if(infix != NULL || infix != -1)
         {
             Queue *postfix = Infix_To_Postfix(infix);
             drawGraph(postfix);
-            Clear_Queue(equationQueue);
             Clear_Queue(infix);
-            memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+            //memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+            if(graphQueue != NULL)
+            {
+                Clear_Queue(graphQueue);
+                free(graphQueue);
+            }
             graphQueue = postfix;
 
             return;
