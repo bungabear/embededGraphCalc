@@ -44,7 +44,7 @@ int Is_Empty_Queue(Queue *queue) {
 	else	return 1;
 }
 
-Node *Create_Node(char *str) {
+Node *Create_Node(const char *str) {
 	Node *node = (Node *)malloc(sizeof(Node));
 	int len;
 
@@ -60,7 +60,7 @@ Node *Create_Node(char *str) {
 	return node;
 }
 
-int Enqueue(Queue *queue, char *str) {
+int Enqueue(Queue *queue, const char *str) {
 
 	Node *node = Create_Node(str);
 
@@ -152,7 +152,26 @@ char *Pop(Queue *queue) {
 		return str;
 	}
 }
-int Push(Queue *queue, char *str) {
+
+int Push(Queue *queue, const char *str) {
 	return Enqueue(queue, str);
+}
+
+Queue *Copy_Queue(Queue *queue) {
+	Queue *copy = (Queue *)malloc(sizeof(Queue));
+	if (copy == NULL) return copy;
+	
+	Init_Queue(copy);
+
+	int i,res;
+	Node *tmp = queue->head;
+
+	for (i = 0; i < queue->size; i++) {
+		res = Enqueue(copy, tmp->context);
+		if (res < 0) return 0;
+		tmp = tmp->right;
+	}
+
+	return copy;
 }
 

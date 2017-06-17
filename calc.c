@@ -11,6 +11,7 @@
 #include<sys/types.h>
 #include<linux/input.h>
 #include<sys/time.h>
+#include<limits.h>
 #include"queue.h"
 #include"pointqueue.h"
 #include"doublequeue.h"
@@ -32,6 +33,7 @@ int xScale = 20;
 int yScale = 20;
 Queue *equationQueue;
 PointQueue *pointQueue;
+Queue *graphQueue;
 
 void connectPoint(int x1, int y1, int x2, int y2)
 {
@@ -263,23 +265,72 @@ void drawGraph(Queue *postfix)
         }
         // draw Line
         // if Queue is empty, Dequeue return -1
-        int prex = -1, prey = -1;
+        int prex, prey;
         Dequeue_PointQueue(pointQueue, &prex,&prey);
+	int preyover = 0, yover = 0;
+        prex = prex - graphXstart;
+	if(prey == INT_MIN)
+	{
+		prey = graphHeight;
+		preyover = 1;
+	}
+	else if(prey == INT_MAX)
+	{
+		prey = fontSize;
+		preyover = 1;
+	}
+	else
+		prey = graphHeight - prey + graphYstart;
         while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
         {
             x = x - graphXstart;
-            y = graphHeight - (y - graphYstart);
+	    if(y == INT_MIN)
+	    {
+		    y = graphHeight;
+		    yover = -1;
+	    }
+	    else if(y == INT_MAX)
+	    {
+		    y = fontSize;
+		    yover = -1;
+	    }
+	    else
+		    y = graphHeight - y + graphYstart;
             //printf("set  x : %d, y : %d\n", x, y);
             // if point x is not continual, skip draw a line.
             if(x - prex == 1)
             {
-                connectPoint(prex, prey, x, y);
+                if(prey < fontSize)
+		{
+                    prey = fontSize;
+		    preyover = 1;
+                }
+		else if(prey > graphHeight)
+		{
+                    prey = graphHeight;
+		    preyover = 1;
+                }
+		if(y < fontSize)
+		{
+                    y = fontSize;
+		    yover = -1;
+                }
+		else if(y > graphHeight)
+		{
+                    y = graphHeight;
+		    yover = -1;
+		}
+		if(preyover == 1 && yover == -1)
+			continue;
+                connectPoint(prex + preyover, prey, x + yover, y);
             }
             //else
             //offset = x + fbvar.xres*y;
             //*(pfbdata+offset) = 0x00ff;
             prex = x;
             prey = y;
+	    preyover = 0;
+	    yover = 0;
         }
     }
 }
@@ -392,7 +443,9 @@ void buttonTouch(int buttonNum)
             Queue *postfix = Infix_To_Postfix(infix);
             drawGraph(postfix);
             Clear_Queue(equationQueue);
+            Clear_Queue(infix);
             memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
+            graphQueue = postfix;
 
             return;
         }
@@ -416,8 +469,29 @@ void buttonTouch(int buttonNum)
         if(buttonNum == 0 && equationQueue->size != 0)
             return;
         // mush y= is first input
-        if(buttonNum !=0 && equationQueue->size == 0)
-            return;
+        if(equationQueue->size == 0)
+        {
+            // -
+            if(buttonNum == 15)
+            {
+                xScale /=2;
+                yScale /=2;
+                drawGraph(graphQueue);
+                return;
+            }
+            // +
+            else if(buttonNum == 23)
+            {
+                xScale *=2;
+                yScale *=2;
+                drawGraph(graphQueue);
+                return;
+            }
+            else if(buttonNum == 0)
+            {
+            }
+            else return;
+        }
         // else buttons
         Enqueue(equationQueue, buttonChar[buttonNum]);
         // check equation is correct, if not correct Dqeueue.

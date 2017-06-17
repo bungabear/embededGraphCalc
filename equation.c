@@ -100,7 +100,17 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 		if (cur_state < 0) continue;
 
 		if (last_state == -1) {
-			if (cur_state == OPERATION || cur_state == DOT || cur_state == CLOSE) {
+			if (cur_state == OPERATION) {
+				if (strncmp(str, "-", 1) == 0) {
+					last_str = str;
+				} else if (strncmp(str, "+", 1) == 0) {
+					last_state = cur_state;
+					continue;
+				} else {
+					printf("irreguler equation\n");
+					return 0;
+				}
+			}else if (cur_state == OPERATION) {
 				printf("irreguler equation\n");
 				return 0;
 			} else if (cur_state == FUNCTION || cur_state == XVALUE || cur_state == OPEN || cur_state == CONSTANT){
@@ -116,7 +126,14 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 				res = Enqueue(infix, str);
 				if (res < 0) return 0;
 			}
-			else if (cur_state == NUMBER)		last_str = str;
+			else if (cur_state == NUMBER) {
+				if(last_str != NULL && strncmp(last_str, "-", 1) == 0)
+				{
+					last_str = (char *)realloc(last_str, strlen(last_str) + strlen(str) + 1);
+					strncat(last_str, str, strlen(str));
+				}
+				else	last_str = str;	
+			}		
 		} else if(last_state == FUNCTION){
 			if (cur_state == OPERATION || cur_state == DOT || cur_state == CLOSE) {
 				printf("irreguler equation\n");
@@ -160,7 +177,17 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 				last_str = str;
 			}
 		} else if (last_state == OPEN) {
-			if (cur_state == DOT || cur_state == OPERATION) {
+			if (cur_state == OPERATION) {
+				if (strncmp(str, "-", 1) == 0) {
+					last_str = str;
+				} else if (strncmp(str, "+", 1) == 0) {
+					last_state = cur_state;
+					continue;
+				} else {
+					printf("irreguler equation\n");
+					return 0;
+				}
+			}else if (cur_state == DOT) {
 				printf("irreguler equation\n");
 				return 0;
 			} else if (cur_state == XVALUE || cur_state == FUNCTION || cur_state == CONSTANT || cur_state == OPEN || cur_state == CLOSE) {
@@ -316,7 +343,7 @@ String_Queue *Infix_To_Postfix(String_Queue *infix) {
 	while (!Is_Empty_Queue(opStack)) {
 		str = Pop(opStack);
 		res = Enqueue(postfix, str);
-		if (res < 0) return -1;
+		if (res < 0) return 0;
 	}
 
 	return postfix;
