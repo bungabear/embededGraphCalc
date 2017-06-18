@@ -32,6 +32,7 @@ int graphYstart;
 int xScale = 20;
 int yScale = 20;
 int mode = 0;
+double prevTan = NAN;
 Queue *equationQueue = NULL;
 PointQueue *pointQueue = NULL;
 Queue *graphQueue = NULL;
@@ -39,7 +40,7 @@ Queue *graphQueue = NULL;
 void connectPoint(int x1, int y1, int x2, int y2)
 {
     int i, half, tmp, x, offset;
-    printf("draw line (%d, %d) to (%d, %d)\n", x1, y1, x2, y2);
+    //printf("draw line (%d, %d) to (%d, %d)\n", x1, y1, x2, y2);
     if(y1 > y2)
     {
         tmp = x1;
@@ -94,11 +95,30 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                 {
                     first = tan(first);
                     // tan() doesn't return infinity.
-                    // showable y :  graphYstart < Y < graphHeight + graphYstart 
-                    if(graphYstart > first || graphYstart + graphHeight < first)
-                    {
-                        err = 1; 
-                    }
+		    if(!isnan(prevTan))
+		    {
+			    if(prevTan - first > 100)
+			    {
+				    prevTan = first;
+				    first = INFINITY;
+				    // set prevPoint to -INFINITY
+				    int x, y;
+				    Dequeue_PointQueue(pointQueue, &x, &y);
+				    Enqueue_PointQueue(pointQueue, x, INT_MIN);
+			    }else if(prevTan - first < -100)
+			    {
+				    prevTan = first;
+				    first = -INFINITY;
+				    // set prevPoint to INFINITY
+				    int x, y;
+				    Dequeue_PointQueue(pointQueue, &x, &y);
+				    Enqueue_PointQueue(pointQueue, x, INT_MAX);
+			    }
+		    }
+		    else
+		    {
+			    prevTan = first;
+		    }
                 }
                 else if(strncmp(str, "ln" ,5) == 0)
                 {
@@ -224,12 +244,24 @@ void drawGraph(Queue *postfix)
             {
                 *(pfbdata + x + fbvar.xres*y) = 0x0;	
                 // draw scale
-                if((graphYstart + y)%yScale == 0)
+                if((graphYstart + y - fontSize)%yScale == 0)
                 {
                     for(z = -2; z <= 2; z++)
                     {
                         *(pfbdata + x+z + fbvar.xres*y) = 0x0;	
                     }
+		    if(y + fontSize + 5 >= graphHeight + fontSize)
+			    continue;
+		    int skipNum = 1;
+		    if(yScale < fontSize)
+		    {
+			    skipNum += fontSize/yScale;
+			    if(((graphYstart + y - fontSize)/yScale)%skipNum != 0)
+			    continue;
+		    }
+		    char num[5];
+		    sprintf(num, "%d", -(graphYstart + y - fontSize)/yScale);
+		    printStr(num, x, y + 4, 0x0, 0xffff);
                 }
             }
             // draw X Line
@@ -243,6 +275,16 @@ void drawGraph(Queue *postfix)
                     {
                         *(pfbdata + x + fbvar.xres*(z+y)) = 0x0;	
                     }
+		    int skipNum = 1;
+		    if(xScale < fontSize*3)
+		    {
+			    skipNum += fontSize*3/xScale;
+			    if(((graphXstart + x)/xScale)%skipNum != 0)
+			    continue;
+		    }
+		    char num[5];
+		    sprintf(num, "%d", (graphXstart + x)/xScale);
+		    printStr(num, x - strlen(num)/2 , y + 4, 0x0, 0xffff);
                 }
             }
         }
@@ -264,6 +306,8 @@ void drawGraph(Queue *postfix)
             j *= yScale;
             Enqueue_PointQueue(pointQueue, x, (int)j);
         }
+	Print_PointNode(pointQueue);
+	prevTan = NAN;
         // draw Line
         // if Queue is empty, Dequeue return -1
         int prex, prey;
@@ -321,7 +365,7 @@ void drawGraph(Queue *postfix)
                     y = graphHeight + fontSize;
 		    yover = -1;
 		}
-		if(preyover != 1 && yover != -1)
+		if(preyover == 0 || yover == 0)
 			connectPoint(prex + preyover, prey, x + yover, y);
             }
             //else
@@ -329,7 +373,7 @@ void drawGraph(Queue *postfix)
             //*(pfbdata+offset) = 0x00ff;
             prex = x;
             prey = y;
-	    preyover = 0;
+	    preyover = yover;
 	    yover = 0;
         }
     }
@@ -430,7 +474,7 @@ int main()
 }
 void buttonTouch(int buttonNum)
 {
-    printf("Button %s touched\n", buttonChar[buttonNum]);
+    //printf("Button %s touched\n", buttonChar[buttonNum]);
     // "Draw" button
     if(buttonNum == 31)
     {
@@ -534,6 +578,8 @@ void buttonTouch(int buttonNum)
 	    // - in view mode
 	    if(buttonNum == 15)
 	    {
+		    if(xScale < 5)
+			return;
 		    xScale /=2;
 		    yScale /=2;
 		    drawGraph(graphQueue);
@@ -542,6 +588,8 @@ void buttonTouch(int buttonNum)
 	    // + in view mode
 	    else if(buttonNum == 23)
 	    {
+		    if(xScale > 100)
+			 return;
 		    xScale *=2;
 		    yScale *=2;
 		    drawGraph(graphQueue);
