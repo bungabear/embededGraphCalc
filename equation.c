@@ -101,11 +101,11 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 
 		if (last_state == -1) {
 			if (cur_state == OPERATION) {
-				if (strncmp(str, "-", 1) == 0) {
-					last_str = str;
-				} else if (strncmp(str, "+", 1) == 0) {
-					last_state = cur_state;
-					continue;
+				if (strncmp(str, "-", 1) == 0 || strncmp(str, "+", 1) == 0) {
+					res = Enqueue(infix, "0");
+					if (res < 0) return 0;
+					res = Enqueue(infix, str);
+					if (res < 0) return 0;
 				} else {
 					printf("irreguler equation\n");
 					return 0;
