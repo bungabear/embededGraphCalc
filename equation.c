@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "equation.h"
-#include "calc.h"
 
 extern const int OPEN;
 extern const int CLOSE;
@@ -19,7 +18,7 @@ extern const int THIRD;
 extern const int FOURTH;
 
 extern const int state[32];
-extern const char buttonChar[32][5];
+extern const char buttonChar[2][32][5];
 
 int Confirm_Word(char *str) {
 
@@ -28,7 +27,7 @@ int Confirm_Word(char *str) {
 
 	for (i = 0; i < size ; i++) {
 		len = strlen(str);
-		if (strncmp(str, buttonChar[i], len) == 0) {
+		if (strncmp(str, buttonChar[0][i], len) == 0) {
 			index = i;
 			break;
 		}

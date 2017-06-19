@@ -28,7 +28,8 @@ const int FOURTH = 4;
 
 //extern enum ={ OPEN, CLOSE, FUNCTION, OPERATION, XVALUE, CONSTANT, NUMBER, DOT};
 // Buttons of screen. P is Pi, R is Root.
-const char buttonChar[32][5] = {
+const char buttonChar[2][32][5] = {
+{
 	//0     1       2       3       4       5       6       7
 	"y=",   "x",    "P",    "(",    ")",    "<-",  "^",    "R",
 	//8     9       10      11      12      13      14      15
@@ -37,6 +38,14 @@ const char buttonChar[32][5] = {
 	"cos",  "ln",   "%",    "4",    "5",    "6",    "*",    "+",
 	//24    25      26      27      28      29      30      31
 	"tan",  "log",  ".",    "1",    "2",    "3",    "0",    "Draw"
+},
+{
+"    ",	"    ",	"    ",	"    ",	"    ",	"cls" ,	"    ",	"    ",
+"    ",	"    ",	"^",	"    ",	"    ",	"    ",	"    ",	"    ",
+"    ",	" <",	"o",	">",	"    ",	"+ ",	"    ",	"    ",
+"    ",	"    ",	"d",	"    ",	"",	"-",	"    ",	"Edit"
+
+}
 };
 
 const int state[32] = {
@@ -49,7 +58,7 @@ const int state[32] = {
 
 // ascii + pi,root font
 // size is 8*8 = 64bits.
-const long long font[130] = {
+const long long font[131] = {
         0x7E7E7E7E7E7E0000, /* NUL */
         0x7E7E7E7E7E7E0000, /* SOH */
         0x7E7E7E7E7E7E0000, /* STX */
@@ -179,7 +188,8 @@ const long long font[130] = {
         0x324C000000,       /* ~ */
         0x7E7E7E7E7E7E0000, /* DEL */
         0x7E242424242464C4, /* pi */
-        0x0F08080850503010  /* root */
+        0x0F08080850503010  /* root */,
+	0x0000004122140800  /* Downarrow */
 };
 
 // for touch calibration. [0] is start value, [1] is calib. value
@@ -200,5 +210,6 @@ struct timeval elapsedTime(struct timeval prev);
 void buttonTouch(int buttonNum);
 void drawGraph(Queue *postfix);
 void connectPoint(int x1, int y1, int x2, int y2);
+void drawButtons(int type);
 
 #endif

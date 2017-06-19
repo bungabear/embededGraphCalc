@@ -97,7 +97,7 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                     // tan() doesn't return infinity.
 		    if(!isnan(prevTan))
 		    {
-			    if(prevTan - first > 2*yScale)
+			    if(prevTan - first > 4*yScale)
 			    {
 			    
 				    prevTan = first;
@@ -110,7 +110,7 @@ double calcEquation(double x, Queue *postfix, int *errorno)
 					//err = 1;
 					*/
 			    }
-			    else if(prevTan - first < -2*yScale)
+			    else if(prevTan - first < -4*yScale)
 			    {
 				    first = INFINITY;
 				    prevTan = first;
@@ -334,7 +334,7 @@ void drawGraph(Queue *postfix)
 	}
 	else
 		prey = graphHeight - prey + graphYstart + fontSize -1;
-        while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
+	while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
         {
 		printf("Dequque %d, %d -> ",x,y);
             x = x - graphXstart;
@@ -515,17 +515,14 @@ void buttonTouch(int buttonNum)
                 }
                 graphQueue = postfix;
                 mode = 1;
-                printStr("Edit", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-                printStr("Cls", buttonWidth*5+(buttonWidth-fontSize*3)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+		drawButtons(mode);
             }
         }
         // touch Edit
         else
         {
             mode = 0;
-            printStr("Draw", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-            printStr("    ", buttonWidth*5+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-            printStr("<-", buttonWidth*5+(buttonWidth-fontSize*2)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+	    drawButtons(mode);
         }
 	return;
     }
@@ -551,9 +548,7 @@ void buttonTouch(int buttonNum)
 		graphQueue = NULL;
                 memset(pfbdata, 0x0, fbvar.xres*fontSize*2);
 		mode = 0;
-		printStr("Draw", buttonWidth*7+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*3 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-		printStr("    ", buttonWidth*5+(buttonWidth-fontSize*4)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
-		printStr("<-", buttonWidth*5+(buttonWidth-fontSize*2)/2 , buttonsYPos + buttonHeight*0 + (buttonHeight-fontSize)/2 , 0xffff, 0x0000);
+		drawButtons(mode);
 		return;
 	}
     }
@@ -566,7 +561,7 @@ void buttonTouch(int buttonNum)
 		    return;
 	    // mush y= is first input
 	    // else buttons
-	    Enqueue(equationQueue, buttonChar[buttonNum]);
+	    Enqueue(equationQueue, buttonChar[0][buttonNum]);
 
 	    // check equation is correct, if not correct Dqeueue.
 	    //if(equationQueue->size > 1)
@@ -588,7 +583,7 @@ void buttonTouch(int buttonNum)
     else
     {
 	    // - in view mode
-	    if(buttonNum == 15)
+	    if(buttonNum == 29)
 	    {
 		    if(xScale < 10)
 			return;
@@ -598,12 +593,43 @@ void buttonTouch(int buttonNum)
 		    return;
 	    }
 	    // + in view mode
-	    else if(buttonNum == 23)
+	    else if(buttonNum == 21)
 	    {
 		    if(xScale > 100)
 			 return;
 		    xScale *=2;
 		    yScale *=2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
+	    else if(buttonNum == 10)
+	    {
+		    graphYstart -= yScale*2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
+	    else if(buttonNum == 26)
+	    {
+		    graphYstart += yScale*2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
+	    else if(buttonNum == 17)
+	    {
+		    graphXstart -= xScale*2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
+	    else if(buttonNum == 19)
+	    {
+		    graphXstart += xScale*2;
+		    drawGraph(graphQueue);
+		    return;
+	    }
+	    else if(buttonNum == 18)
+	    {
+		    graphXstart = (-graphWidth/2);
+		    graphYstart = (-graphHeight/2);
 		    drawGraph(graphQueue);
 		    return;
 	    }
@@ -680,6 +706,7 @@ void initScreen()
     graphHeight = fbvar.yres - buttonHeight*4 - fontSize;
 
     memset(pfbdata, 0, fbvar.xres*fbvar.yres*2);
+    /*
     int offset, buttonCount = 0;
     for(y = fbvar.yres-(buttonHeight*4)-1 ; y < fbvar.yres; y++)
     {
@@ -697,11 +724,53 @@ void initScreen()
                 {
                     if((buttonCount%fontSize)*buttonWidth < x)
                     {
-                        if(buttonHeight - (int)strlen(buttonChar[buttonCount])*4 == x%40)
+                        if(buttonHeight - (int)strlen(buttonChar[type][buttonCount])*4 == x%40)
                         {
                             if(buttonCount<32)
                             {
-                                printStr(buttonChar[buttonCount], x, y, 0xffff, 0x0000);
+                                printStr(buttonChar[type][buttonCount], x, y, 0xffff, 0x0000);
+                                buttonCount++;
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            //8col each width is 40
+        }
+    }*/
+    drawButtons(0);
+    graphXstart = (-graphWidth/2);
+    graphYstart = (-graphHeight/2);
+    drawGraph(NULL);
+}
+void drawButtons(int type)
+{
+int x,y;
+    memset(pfbdata + fbvar.xres*buttonsYPos, 0, fbvar.xres*(fbvar.yres-buttonsYPos)*2);
+    int offset, buttonCount = 0;
+    for(y = fbvar.yres-(buttonHeight*4)-1 ; y < fbvar.yres; y++)
+    {
+        //4row each height is 20
+        for(x = 0; x < fbvar.xres; x++)
+        {
+            offset = x + y*fbvar.xres;
+            if(x%buttonWidth == 0 || y%buttonHeight == buttonHeight-1 || x == fbvar.xres-1)
+            {
+                *(offset+pfbdata) = 0xffff;
+            }
+            else 
+            {
+                if(y%buttonHeight == (buttonHeight-fontSize)/2 -1)
+                {
+                    if((buttonCount%fontSize)*buttonWidth < x)
+                    {
+                        if(buttonHeight - (int)strlen(buttonChar[type][buttonCount])*4 == x%40)
+                        {
+                            if(buttonCount<32)
+                            {
+                                printStr(buttonChar[type][buttonCount], x, y, 0xffff, 0x0000);
                                 buttonCount++;
                             }
                         }
@@ -713,9 +782,6 @@ void initScreen()
             //8col each width is 40
         }
     }
-    graphXstart = (-graphWidth/2);
-    graphYstart = (-graphHeight/2);
-    drawGraph(NULL);
 }
 void printStr(const char *str, int x, int y, unsigned short color, unsigned short bgcolor)
 {
@@ -732,6 +798,8 @@ void printChar(char charNum, int x, int y, unsigned short color, unsigned short 
         charNum = 128;
     else if(charNum == 'R')
         charNum = 129;
+    else if(charNum == 'd')
+	charNum = 130;
     int i, j, offset;
     long long ascii = font[charNum];
     long long tmp = ascii;
