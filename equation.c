@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "equation.h"
+#include "calc.h"
 
 extern const int OPEN;
 extern const int CLOSE;
@@ -252,6 +253,34 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 			}
 		}
 		last_state = cur_state;
+	}
+
+	while (1)
+	{
+		str = Pop(infix);
+		cur_state = Confirm_Word(str);
+		if (cur_state == CLOSE) {
+			last_str = Pop(infix);
+			last_state = Confirm_Word(last_str);
+			if (last_state == OPEN) {
+				printf("irreguler equation\n");
+				return 0;
+			} else {
+				res = Enqueue(infix,last_str);
+				if (res < 0) return 0;
+				res = Enqueue(infix, str);
+				if (res < 0) return 0;
+				break;
+			}
+		} else if (cur_state == FUNCTION || cur_state == DOT || cur_state == OPERATION) {
+			printf("irreguler equation\n");
+			return 0;
+		} else {
+			res = Enqueue(infix, str);
+			if (res < 0) return 0;
+			break;
+		}
+
 	}
 
 	return infix;
