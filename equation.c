@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "equation.h"
+#include "calc.h"
 
 extern const int OPEN;
 extern const int CLOSE;
@@ -127,12 +128,7 @@ String_Queue *Reguler_equation(String_Queue *equation) {
 				if (res < 0) return 0;
 			}
 			else if (cur_state == NUMBER) {
-				if(last_str != NULL && strncmp(last_str, "-", 1) == 0)
-				{
-					last_str = (char *)realloc(last_str, strlen(last_str) + strlen(str) + 1);
-					strncat(last_str, str, strlen(str));
-				}
-				else	last_str = str;	
+				last_str = str;	
 			}		
 		} else if(last_state == FUNCTION){
 			if (cur_state == OPERATION || cur_state == DOT || cur_state == CLOSE) {
