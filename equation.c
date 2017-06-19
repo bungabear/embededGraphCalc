@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "equation.h"
-#include "calc.h"
 
 extern const int OPEN;
 extern const int CLOSE;

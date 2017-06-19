@@ -137,4 +137,5 @@ double Pop_DoubleQueue(DoubleQueue *queue) {
 int Push_DoubleQueue(DoubleQueue *queue, double value) {
 	return Enqueue_DoubleQueue(queue, value);
 }
+A
 

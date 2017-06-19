@@ -40,7 +40,7 @@ Queue *graphQueue = NULL;
 void connectPoint(int x1, int y1, int x2, int y2)
 {
     int i, half, tmp, x, offset;
-    //printf("draw line (%d, %d) to (%d, %d)\n", x1, y1, x2, y2);
+    //printf("draw line (%d, %d) to (%d, %d), scale : %d\n", x1, y1, x2, y2, xScale);
     if(y1 > y2)
     {
         tmp = x1;
@@ -97,22 +97,30 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                     // tan() doesn't return infinity.
 		    if(!isnan(prevTan))
 		    {
-			    if(prevTan - first > 100)
+			    if(prevTan - first > 2*yScale)
 			    {
-				    prevTan = first;
-				    first = INFINITY;
-				    // set prevPoint to -INFINITY
-				    int x, y;
-				    Dequeue_PointQueue(pointQueue, &x, &y);
-				    Enqueue_PointQueue(pointQueue, x, INT_MIN);
-			    }else if(prevTan - first < -100)
-			    {
+			    
 				    prevTan = first;
 				    first = -INFINITY;
+		    /*
+				    // set prevPoint to -INFINITY
+				    int x, y;
+				    Pop_PointQueue(pointQueue, &x, &y);
+				    Enqueue_PointQueue(pointQueue, x, INT_MAX);
+					//err = 1;
+					*/
+			    }
+			    else if(prevTan - first < -2*yScale)
+			    {
+				    first = INFINITY;
+				    prevTan = first;
+		    /*
 				    // set prevPoint to INFINITY
 				    int x, y;
-				    Dequeue_PointQueue(pointQueue, &x, &y);
-				    Enqueue_PointQueue(pointQueue, x, INT_MAX);
+				    Pop_PointQueue(pointQueue, &x, &y);
+				    Enqueue_PointQueue(pointQueue, x, INT_MIN);
+				    //err = 1;
+				    */
 			    }
 		    }
 		    else
@@ -178,7 +186,7 @@ double calcEquation(double x, Queue *postfix, int *errorno)
                             first = first / second;
                         break;
                     case '%':
-                        first = first + second;
+                        first = abs((int)first % (int)second);
                         break;
                     case '^':
                         first = pow(first, second);
@@ -306,7 +314,7 @@ void drawGraph(Queue *postfix)
             j *= yScale;
             Enqueue_PointQueue(pointQueue, x, (int)j);
         }
-	Print_PointNode(pointQueue);
+	//Print_PointNode(pointQueue);
 	prevTan = NAN;
         // draw Line
         // if Queue is empty, Dequeue return -1
@@ -317,7 +325,7 @@ void drawGraph(Queue *postfix)
 	if(prey == INT_MIN)
 	{
 		prey = graphHeight + fontSize;
-		preyover = 1;
+		preyover = -1;
 	}
 	else if(prey == INT_MAX)
 	{
@@ -325,55 +333,59 @@ void drawGraph(Queue *postfix)
 		preyover = 1;
 	}
 	else
-		prey = graphHeight - prey + graphYstart + fontSize;
+		prey = graphHeight - prey + graphYstart + fontSize -1;
         while(Dequeue_PointQueue(pointQueue, &x,&y) != -1)
         {
+		printf("Dequque %d, %d -> ",x,y);
             x = x - graphXstart;
 	    if(y == INT_MIN)
 	    {
-		    y = graphHeight + fontSize;
+		    y = graphHeight + fontSize -1;
 		    yover = -1;
 	    }
 	    else if(y == INT_MAX)
 	    {
 		    y = fontSize;
-		    yover = -1;
+		    yover = 1;
 	    }
 	    else
-		    y = graphHeight - y + graphYstart + fontSize;
-            //printf("set  x : %d, y : %d\n", x, y);
-            // if point x is not continual, skip draw a line.
+		    y = graphHeight - y + graphYstart + fontSize -1;
             if(x - prex == 1)
             {
-                if(prey < fontSize)
-		{
-                    prey = fontSize;
-		    preyover = 1;
-                }
-		else if(prey > graphHeight + fontSize)
-		{
-                    prey = graphHeight + fontSize;
-		    preyover = 1;
-                }
 		if(y < fontSize)
 		{
                     y = fontSize;
-		    yover = -1;
+		    yover = 1;
                 }
-		else if(y > graphHeight + fontSize)
+		else if(y >= graphHeight + fontSize)
 		{
-                    y = graphHeight + fontSize;
+                    y = graphHeight + fontSize -1;
 		    yover = -1;
 		}
-		if(preyover == 0 || yover == 0)
-			connectPoint(prex + preyover, prey, x + yover, y);
+		printf(" %d, %d    preyover %d, yover %d\n",x,y, preyover, yover);
+		if(preyover == 1 && yover == -1)
+		{
+			//preyover = yover;
+			//continue;
+		}
+		else if(preyover == -1 && yover == 1)
+		{
+			//preyover = yover;
+			//continue;
+		}
+		else if(preyover == yover  && yover != 0)
+		{}
+		else if(preyover != 0) 
+			connectPoint(prex + 1, prey, x , y);
+		else if(yover != 0) 
+			connectPoint(prex, prey, x-1 , y);
+		else 
+			connectPoint(prex, prey, x , y);
             }
-            //else
-            //offset = x + fbvar.xres*y;
-            //*(pfbdata+offset) = 0x00ff;
             prex = x;
             prey = y;
 	    preyover = yover;
+	    //preyover = 0;
 	    yover = 0;
         }
     }
@@ -578,7 +590,7 @@ void buttonTouch(int buttonNum)
 	    // - in view mode
 	    if(buttonNum == 15)
 	    {
-		    if(xScale < 5)
+		    if(xScale < 10)
 			return;
 		    xScale /=2;
 		    yScale /=2;
